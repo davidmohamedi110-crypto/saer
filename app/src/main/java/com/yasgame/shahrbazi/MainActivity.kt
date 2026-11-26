@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                 webView.evaluateJavascript(
                     "(function(){ if(typeof window.onAndroidBack === 'function'){ return window.onAndroidBack(); } return 'EXIT'; })()"
                 ) { result ->
-                    val clean = result?.replace(""", "") ?: "EXIT"
+                    val clean = result?.trim('"') ?: "EXIT"
                     if (clean == "HANDLED") return@evaluateJavascript
 
                     if (webView.canGoBack()) {
