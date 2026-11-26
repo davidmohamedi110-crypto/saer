@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>مرحله ۳ • مزرعه‌ی ۴ گوشه (چندنفره)</title>
+  <link rel="stylesheet" href="../shared/yas-theme.css" />
+  <style>
+    .wrap { position:relative; z-index:2; max-width:1060px; margin:10px auto 24px; padding:0 10px; }
+    .setup-bar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; padding:10px 14px; }
+    .chip-grp { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .opt-btn { border:2px solid #bbf7d0; background:#fff; color:#166534; border-radius:12px; padding:6px 10px; font-family:inherit; font-weight:800; font-size:12px; cursor:pointer; }
+    .opt-btn.sel { background:linear-gradient(180deg,#34d399,#059669); color:#fff; border-color:#047857; }
+
+    /* Arena */
+    .arena-wrap {
+      position:relative; width:100%; aspect-ratio:16/10; min-height:360px; max-height:70vh;
+      border-radius:28px; overflow:hidden;
+      border:4px solid #fff;
+      box-shadow:0 18px 38px rgba(5,150,105,.22);
+      background:radial-gradient(circle at 50% 50%, #dcfce7 0%, #86efac 68%, #4ade80 100%);
+      touch-action:none;
+    }
+    #farmCanvas { width:100%; height:100%; display:block; touch-action:none; }
+
+    /* 4 Multi-Touch Corner Pads overlaid cleanly */
+    .corner-pad {
+      position:absolute; width:136px; height:96px; z-index:10;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      font-weight:900; font-size:13px; color:#fff; cursor:pointer;
+      user-select:none; touch-action:none; transition:transform .12s;
+      text-shadow:0 1px 3px rgba(0,0,0,.35);
+    }
+    .corner-pad:active, .corner-pad.pressed { transform:scale(0.93); }
+    .cp-tl { top:0; left:0; border-bottom-right-radius:26px; background:linear-gradient(135deg,rgba(250,204,21,.92),rgba(217,119,6,.88)); border-right:5px solid #fef08a; border-bottom:5px solid #fef08a; }
+    .cp-tr { top:0; right:0; border-bottom-left-radius:26px; background:linear-gradient(135deg,rgba(56,189,248,.92),rgba(2,132,199,.88)); border-left:5px solid #bae6fd; border-bottom:5px solid #bae6fd; }
+    .cp-bl { bottom:0; left:0; border-top-right-radius:26px; background:linear-gradient(135deg,rgba(34,197,94,.92),rgba(21,128,61,.88)); border-right:5px solid #bbf7d0; border-top:5px solid #bbf7d0; }
+    .cp-br { bottom:0; right:0; border-top-left-radius:26px; background:linear-gradient(135deg,rgba(244,63,94,.92),rgba(190,18,60,.88)); border-left:5px solid #fecdd3; border-top:5px solid #fecdd3; }
+
+    @media (max-width:640px) {
+      .arena-wrap { aspect-ratio:4/5; min-height:430px; }
+      .corner-pad { width:112px; height:84px; font-size:11.5px; }
+    }
+
+    .hud-center {
+      position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:12;
+      background:rgba(255,255,255,.92); border:2px solid #86efac; border-radius:999px;
+      padding:5px 15px; font-weight:900; font-size:13px; color:#065f46;
+      box-shadow:0 6px 16px rgba(0,0,0,.12); white-space:nowrap;
+    }
+
+    .result-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin:12px 0; }
+    .res-box { padding:10px; border-radius:16px; color:#fff; font-weight:900; text-align:center; }
+  </style>
+</head>
+<body>
+  <header class="yas-header">
+    <div class="yas-header-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="jelly-btn jb-purple" style="padding:8px 12px;font-size:12.5px;" onclick="location.href='../index.html'">🏠 منو</button>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#047857;">🐑 مزرعه‌ی ۴ گوشه (چندنفره)</div>
+          <div style="font-size:11px;font-weight:700;color:#10b981;">مرحله ۳ • مهربانی با حیوانات 🦌</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="stat-chip stars" onclick="YasCore.openGarden()">⭐ <span data-stars>0</span></span>
+        <span class="stat-chip buds" onclick="YasCore.openGarden()">🌸 <span data-buds>0</span></span>
+        <button data-sound-btn class="soft-btn" style="padding:7px 10px;" onclick="YasCore.audio.toggle()">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="glass-card setup-bar">
+      <div class="chip-grp">
+        <button id="mdCoop" class="opt-btn sel" onclick="setGameMode('coop')">🤝 همکاری خواهرانه (هدف ۲۰)</button>
+        <button id="mdFest" class="opt-btn" onclick="setGameMode('fest')">🎉 جشن باغچه‌ها (۶۰ ثانیه)</button>
+        <button id="btnBot" class="opt-btn sel" onclick="toggleBot()">🤖 ربات مهربان گوشه ۴: فعال</button>
+        <button id="btnHelper" class="opt-btn sel" onclick="toggleHelper()">🎀 کمک کوچولو (زرد آهنربایی)</button>
+      </div>
+      <button id="btnStart" class="jelly-btn jb-emerald" onclick="startMatch()">▶ شروع بازی!</button>
+    </div>
+
+    <div class="arena-wrap" id="arenaWrap">
+      <div id="hudCenter" class="hud-center">🌿 روی گوشه‌ی رنگی خودت بزن تا حیوانات رو به باغچه بیاری!</div>
+      <canvas id="farmCanvas"></canvas>
+
+      <!-- ۴ گوشه رنگی مطابق نقاشی بچه‌ها -->
+      <div class="corner-pad cp-tl" id="pad0" data-idx="0">
+        <div>💛 باغچه زرد (Q)</div>
+        <div id="sc0" style="font-size:18px;">0</div>
+      </div>
+      <div class="corner-pad cp-tr" id="pad1" data-idx="1">
+        <div>💙 باغچه آبی (P)</div>
+        <div id="sc1" style="font-size:18px;">0</div>
+      </div>
+      <div class="corner-pad cp-bl" id="pad2" data-idx="2">
+        <div>💚 باغچه سبز (Z)</div>
+        <div id="sc2" style="font-size:18px;">0</div>
+      </div>
+      <div class="corner-pad cp-br" id="pad3" data-idx="3">
+        <div>❤️ باغچه قرمز (M)</div>
+        <div id="sc3" style="font-size:18px;">0</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- پنجره جشن پایان دور -->
+  <div id="winModal" class="yas-modal-bg" onclick="if(event.target===this) closeWin()">
+    <div class="yas-modal-card" style="text-align:center;border-color:#34d399;">
+      <div style="font-size:50px;">🏆🦌🌸</div>
+      <h2 id="winTitle" style="color:#065f46;margin:6px 0;">آفرین به همه‌ی خواهرهای مهربان!</h2>
+      <p id="winSub" style="font-size:13px;font-weight:700;color:#475569;"></p>
+      <div id="resGrid" class="result-grid"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="jelly-btn jb-emerald" onclick="closeWin(); startMatch();">🔄 دور جدید!</button>
+        <button class="jelly-btn jb-cyan" onclick="saveFarmPhoto()">📸 عکس یادگاری جشن</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/yas-core.js"></script>
+  <script>
+    const canvas = document.getElementById('farmCanvas');
+    const ctx = canvas.getContext('2d');
+    const CORNERS = [
+      { id:0, name:'باغچه زرد', color:'#facc15', dark:'#ca8a04', fx:0.12, fy:0.14 },
+      { id:1, name:'باغچه آبی', color:'#38bdf8', dark:'#0284c7', fx:0.88, fy:0.14 },
+      { id:2, name:'باغچه سبز', color:'#22c55e', dark:'#15803d', fx:0.12, fy:0.86 },
+      { id:3, name:'باغچه قرمز', color:'#f43f5e', dark:'#be123c', fx:0.88, fy:0.86 }
+    ];
+    const ANIMALS = [
+      { emoji:'🐑', need:'💧', pts:1, spd:1.4, rare:false },
+      { emoji:'🐇', need:'🥕', pts:1, spd:1.7, rare:false },
+      { emoji:'🐥', need:'🌾', pts:1, spd:1.5, rare:false },
+      { emoji:'🐱', need:'🥛', pts:1, spd:1.6, rare:false },
+      { emoji:'🦌', need:'✨', pts:3, spd:2.1, rare:true } // آهوی مهربانی طلایی!
+    ];
+
+    let gMode = 'coop';
+    let botEnabled = true;
+    let helper4yo = true;
+    let running = false;
+    let scores = [0, 0, 0, 0];
+    let timeLeft = 60;
+    let animals = [];
+    let ripples = [];
+    let pulses = [0, 0, 0, 0]; // expanding capture wave per corner
+    let timerIv = null, botIv = null;
+
+    function resize() {
+      const r = document.getElementById('arenaWrap').getBoundingClientRect();
+      canvas.width = Math.max(320, Math.floor(r.width));
+      canvas.height = Math.max(320, Math.floor(r.height));
+    }
+    window.addEventListener('resize', resize);
+
+    function setGameMode(m) {
+      gMode = m; YasCore.audio.pop();
+      document.getElementById('mdCoop').classList.toggle('sel', m==='coop');
+      document.getElementById('mdFest').classList.toggle('sel', m==='fest');
+    }
+    function toggleBot() {
+      botEnabled = !botEnabled; YasCore.audio.pop();
+      const b = document.getElementById('btnBot');
+      b.classList.toggle('sel', botEnabled);
+      b.textContent = `🤖 ربات مهربان گوشه ۴: ${botEnabled ? 'فعال' : 'خاموش'}`;
+    }
+    function toggleHelper() {
+      helper4yo = !helper4yo; YasCore.audio.pop();
+      const b = document.getElementById('btnHelper');
+      b.classList.toggle('sel', helper4yo);
+      b.textContent = `🎀 کمک کوچولو (زرد آهنربایی): ${helper4yo ? 'روشن' : 'خاموش'}`;
+    }
+
+    function spawnAnimal() {
+      const rare = Math.random() < 0.16;
+      const tpl = rare ? ANIMALS[4] : ANIMALS[Math.floor(Math.random() * 4)];
+      const ang = Math.random() * Math.PI * 2;
+      animals.push({
+        x: canvas.width * (0.35 + Math.random() * 0.3),
+        y: canvas.height * (0.35 + Math.random() * 0.3),
+        vx: Math.cos(ang) * tpl.spd,
+        vy: Math.sin(ang) * tpl.spd,
+        emoji: tpl.emoji,
+        need: tpl.need,
+        pts: tpl.pts,
+        rare: tpl.rare,
+        bob: Math.random() * 6
+      });
+    }
+
+    function startMatch() {
+      resize();
+      running = true;
+      scores = [0, 0, 0, 0];
+      timeLeft = 60;
+      animals = [];
+      for (let i = 0; i < 7; i++) spawnAnimal();
+      updateScoreBadges();
+      YasCore.audio.sparkle();
+      YasCore.haptic(25);
+
+      if (timerIv) clearInterval(timerIv);
+      if (botIv) clearInterval(botIv);
+
+      timerIv = setInterval(() => {
+        if (!running) return;
+        if (gMode === 'fest') {
+          timeLeft--;
+          if (timeLeft <= 0) endMatch();
+        }
+        if (animals.length < 8) spawnAnimal();
+        updateHud();
+      }, 1000);
+
+      botIv = setInterval(() => {
+        if (running && botEnabled) triggerCorner(3, true);
+      }, 1650);
+
+      updateHud();
+    }
+
+    function updateHud() {
+      const total = scores.reduce((a, b) => a + b, 0);
+      const hud = document.getElementById('hudCenter');
+      if (!running) { hud.textContent = '🌿 دکمه «▶ شروع بازی» رو بزن!'; return; }
+      if (gMode === 'coop') {
+        hud.textContent = `🤝 هدف مشترک خواهرها: ${total} از ۲۰ حیوان شاد 🌸`;
+        if (total >= 20) endMatch();
+      } else {
+        hud.textContent = `⏳ زمان: ${timeLeft} ثانیه | مجموع حیوانات شاد: ${total} 🐑`;
+      }
+    }
+
+    function updateScoreBadges() {
+      scores.forEach((s, i) => document.getElementById('sc' + i).textContent = s);
+    }
+
+    function triggerCorner(idx, isBot = false) {
+      if (!running) { if (!isBot) startMatch(); return; }
+      const pad = document.getElementById('pad' + idx);
+      pad.classList.add('pressed');
+      setTimeout(() => pad.classList.remove('pressed'), 140);
+
+      const c = CORNERS[idx];
+      const cx = canvas.width * c.fx;
+      const cy = canvas.height * c.fy;
+      const reach = (idx === 0 && helper4yo) ? Math.min(canvas.width, canvas.height) * 0.56 : Math.min(canvas.width, canvas.height) * 0.40;
+      pulses[idx] = 1.0;
+
+      // Find nearest animal within reach
+      let bestIdx = -1, bestDist = reach;
+      animals.forEach((a, i) => {
+        const d = Math.hypot(a.x - cx, a.y - cy);
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      });
+
+      if (bestIdx !== -1) {
+        const caught = animals.splice(bestIdx, 1)[0];
+        scores[idx] += caught.pts;
+        updateScoreBadges();
+        ripples.push({ x: caught.x, y: caught.y, text: caught.rare ? '✨ آهوی طلایی +۳' : `+${caught.pts} 💖`, alpha: 1, vy: -1.6 });
+        if (caught.rare) {
+          YasCore.audio.blessing();
+          YasCore.showToast(`🦌 آهوی مهربانی به ${c.name} اومد! (+۳ امتیاز ویژه)`);
+        } else if (!isBot) {
+          YasCore.audio.note(520 + idx * 90, 0.13, 'triangle', 0.14);
+        }
+        if (!isBot) YasCore.haptic(20);
+        spawnAnimal();
+        updateHud();
+      } else if (!isBot) {
+        // Gentle pull towards corner so kids always feel responsive fun
+        animals.forEach(a => {
+          const dx = cx - a.x, dy = cy - a.y, dist = Math.hypot(dx, dy) || 1;
+          if (dist < reach * 1.45) {
+            a.vx += (dx / dist) * 0.85;
+            a.vy += (dy / dist) * 0.85;
+          }
+        });
+        YasCore.audio.bubble();
+      }
+    }
+
+    function endMatch() {
+      running = false;
+      clearInterval(timerIv); clearInterval(botIv);
+      const total = scores.reduce((a, b) => a + b, 0);
+      const stars = Math.max(5, Math.min(18, Math.round(total * 0.6)));
+      const buds = Math.max(2, Math.min(6, Math.round(total * 0.2)));
+      YasCore.addReward(stars, buds, `🏆 جشن مزرعه! +${stars} ستاره و +${buds} غنچه یاس`);
+      YasCore.audio.fanfare();
+      YasCore.burst(window.innerWidth / 2, window.innerHeight / 3, 70, ['🐑','🦌','🌸','⭐']);
+
+      document.getElementById('winTitle').textContent = gMode === 'coop'
+        ? '🎉 هورا! با همکاری هم به همه حیوانات آب و غذا دادید!'
+        : '🌟 جشن مهربانی باغچه‌ها تمام شد!';
+      document.getElementById('winSub').textContent = `مجموع ${total} حیوان شاد شدند! (+${stars} ستاره و +${buds} غنچه یاس برای باغ مشترک)`;
+
+      const medals = ['🏅 مدال مهربانی', '🌸 مدال لبخند', '⭐ مدال سرعت', '💖 مدال دوستی'];
+      const rg = document.getElementById('resGrid'); rg.innerHTML = '';
+      CORNERS.forEach((c, i) => {
+        const d = document.createElement('div');
+        d.className = 'res-box';
+        d.style.background = `linear-gradient(135deg,${c.color},${c.dark})`;
+        d.innerHTML = `<div>${c.name}</div><div style="font-size:20px;margin:2px 0;">${scores[i]} امتیاز</div><div style="font-size:11.5px;opacity:.95;">${medals[i]}</div>`;
+        rg.appendChild(d);
+      });
+      document.getElementById('winModal').classList.add('open');
+    }
+
+    function closeWin() { document.getElementById('winModal').classList.remove('open'); }
+    function saveFarmPhoto() {
+      YasCore.saveImage(canvas.toDataURL('image/png'), 'mazrae-4gooshe-yas.png');
+    }
+
+    // Bind real multi-touch pointerdown to all 4 corners
+    document.querySelectorAll('.corner-pad').forEach(el => {
+      el.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        triggerCorner(Number(el.dataset.idx), false);
+      });
+    });
+
+    // Keyboard shortcuts (works in both English & Persian layout!)
+    window.addEventListener('keydown', e => {
+      const k = e.key.toLowerCase();
+      if (k === 'q' || k === 'ض') triggerCorner(0, false);
+      else if (k === 'p' || k === 'ح') triggerCorner(1, false);
+      else if (k === 'z' || k === 'ظ') triggerCorner(2, false);
+      else if (k === 'm' || k === 'ئ' || k === 'پ') triggerCorner(3, false);
+    });
+
+    // Main Render Loop (Rich meadow + shimmering central fountain + shaded animals)
+    let tick = 0;
+    function loop() {
+      tick += 0.04;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Decorative meadow flowers
+      ctx.save();
+      for (let i = 0; i < 14; i++) {
+        const fx = ((i * 193) % (w - 80)) + 40;
+        const fy = ((i * 127) % (h - 80)) + 40;
+        ctx.font = '18px sans-serif';
+        ctx.globalAlpha = 0.45;
+        ctx.fillText(i % 2 === 0 ? '🌼' : '🌸', fx, fy + Math.sin(tick + i) * 2.5);
+      }
+      ctx.restore();
+
+      // Central sparkling spring fountain
+      ctx.save();
+      const grad = ctx.createRadialGradient(w/2, h/2, 8, w/2, h/2, 54);
+      grad.addColorStop(0, '#e0f2fe'); grad.addColorStop(0.65, '#38bdf8'); grad.addColorStop(1, '#0284c7');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.ellipse(w/2, h/2, 56, 36, 0, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#bae6fd'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.65)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(w/2, h/2, 18 + Math.sin(tick*2)*8, 10 + Math.sin(tick*2)*4, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+
+      // Corner capture pulses
+      CORNERS.forEach((c, i) => {
+        if (pulses[i] > 0.02) {
+          const cx = w * c.fx, cy = h * c.fy;
+          const maxR = (i === 0 && helper4yo) ? Math.min(w, h) * 0.56 : Math.min(w, h) * 0.40;
+          ctx.save();
+          ctx.globalAlpha = pulses[i] * 0.55;
+          ctx.strokeStyle = c.color;
+          ctx.lineWidth = 8;
+          ctx.beginPath(); ctx.arc(cx, cy, (1 - pulses[i]) * maxR + 24, 0, Math.PI * 2); ctx.stroke();
+          ctx.restore();
+          pulses[i] -= 0.05;
+        }
+      });
+
+      // Update & draw animals
+      animals.forEach(a => {
+        if (running) {
+          a.x += a.vx; a.y += a.vy; a.bob += 0.14;
+          a.vx *= 0.992; a.vy *= 0.992;
+          if (Math.hypot(a.vx, a.vy) < 0.7) {
+            a.vx += (Math.random() - 0.5) * 0.9;
+            a.vy += (Math.random() - 0.5) * 0.9;
+          }
+          if (a.x < 45 || a.x > w - 45) a.vx *= -1;
+          if (a.y < 55 || a.y > h - 45) a.vy *= -1;
+          a.x = Math.max(45, Math.min(w - 45, a.x));
+          a.y = Math.max(55, Math.min(h - 45, a.y));
+        }
+
+        const hop = Math.abs(Math.sin(a.bob)) * 6;
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.16)';
+        ctx.beginPath(); ctx.ellipse(a.x, a.y + 18, 18, 7, 0, 0, Math.PI*2); ctx.fill();
+
+        if (a.rare) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(250,204,21,0.38)';
+          ctx.beginPath(); ctx.arc(a.x, a.y - hop, 32, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.font = a.rare ? '42px sans-serif' : '36px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(a.emoji, a.x, a.y - hop);
+
+        // Need bubble above head
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.beginPath(); ctx.arc(a.x + 18, a.y - 26 - hop, 13, 0, Math.PI*2); ctx.fill();
+        ctx.font = '15px sans-serif';
+        ctx.fillText(a.need, a.x + 18, a.y - 25 - hop);
+      });
+
+      // Floating score ripples
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const r = ripples[i];
+        r.y += r.vy; r.alpha -= 0.022;
+        if (r.alpha <= 0) { ripples.splice(i, 1); continue; }
+        ctx.save(); ctx.globalAlpha = r.alpha;
+        ctx.font = 'bold 17px Tahoma,sans-serif'; ctx.fillStyle = '#7e22ce'; ctx.textAlign = 'center';
+        ctx.fillText(r.text, r.x, r.y);
+        ctx.restore();
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      resize();
+      for (let i = 0; i < 6; i++) spawnAnimal();
+      requestAnimationFrame(loop);
+    });
+  </script>
+</body>
+</html>

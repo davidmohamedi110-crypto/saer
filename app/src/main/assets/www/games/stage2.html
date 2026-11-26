@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>مرحله ۲ • آشپزخانه‌ی بفرمایید!</title>
+  <link rel="stylesheet" href="../shared/yas-theme.css" />
+  <style>
+    .wrap { position:relative; z-index:2; max-width:1120px; margin:12px auto 28px; padding:0 12px; }
+    .mode-pills { display:flex; gap:6px; background:#fffbeb; border:2px solid #fde68a; padding:4px; border-radius:16px; }
+    .m-pill { border:none; background:transparent; padding:6px 11px; border-radius:12px; font-family:inherit; font-weight:900; font-size:12px; color:#92400e; cursor:pointer; }
+    .m-pill.active { background:linear-gradient(180deg,#fbbf24,#d97706); color:#fff; box-shadow:0 3px 10px rgba(217,119,6,.3); }
+
+    .layout { display:grid; grid-template-columns:1.2fr 1fr; gap:15px; align-items:start; }
+    @media (max-width:860px){ .layout { grid-template-columns:1fr; } }
+
+    /* Sunlit Animated Kitchen Scene */
+    .kitchen-scene {
+      position:relative; border-radius:26px; overflow:hidden;
+      border:3px solid #fde68a;
+      background:linear-gradient(180deg, #fffbeb 0%, #ffedd5 58%, #fef3c7 100%);
+      box-shadow:0 16px 32px rgba(217,119,6,.14);
+    }
+    .kitchen-svg { width:100%; height:auto; display:block; }
+
+    @keyframes cloudMove { 0%,100% { transform:translateX(0); } 50% { transform:translateX(14px); } }
+    @keyframes fishSwim { 0%,100% { transform:translateX(0) rotate(0deg); } 50% { transform:translateX(7px) rotate(2deg); } }
+    @keyframes steamRise { 0% { transform:translateY(0); opacity:.8; } 100% { transform:translateY(-24px); opacity:0; } }
+    @keyframes glowPulse { 0%,100% { opacity:.45; transform:scale(1); } 50% { opacity:.9; transform:scale(1.06); } }
+
+    .anim-cloud { animation:cloudMove 6s ease-in-out infinite; }
+    .anim-fish { animation:fishSwim 2.8s ease-in-out infinite; transform-origin:center; }
+    .anim-steam { animation:steamRise 1.8s ease-out infinite; }
+    .bismillah-halo { animation:glowPulse 2s ease-in-out infinite; transform-origin:center; }
+
+    .dish-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:9px; margin-bottom:12px; }
+    .dish-card {
+      border:2.5px solid #fde68a; background:#fff; border-radius:18px; padding:10px;
+      cursor:pointer; text-align:center; transition:all .16s var(--spring);
+    }
+    .dish-card.sel { border-color:#f59e0b; background:linear-gradient(180deg,#fffbeb,#fef3c7); transform:scale(1.03); box-shadow:0 6px 14px rgba(245,158,11,.22); }
+    .dish-emoji { font-size:32px; display:block; }
+    .dish-name { font-weight:900; font-size:13px; color:#78350f; margin-top:4px; }
+
+    .step-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0; }
+    .cook-progress { height:16px; background:#f1f5f9; border-radius:999px; overflow:hidden; border:2px solid #fde68a; margin:8px 0 12px; }
+    .cook-bar { height:100%; width:0%; background:linear-gradient(90deg,#fbbf24,#f97316,#ec4899); transition:width .35s var(--spring); }
+
+    .garnish-row { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; }
+    .g-btn { border:2px solid #fbcfe8; background:#fff; border-radius:14px; padding:7px 11px; font-family:inherit; font-weight:800; font-size:13px; cursor:pointer; }
+    .g-btn.used { background:#dcfce7; border-color:#22c55e; color:#166534; }
+
+    .speech-banner {
+      margin-top:10px; padding:10px 14px; border-radius:18px;
+      background:linear-gradient(135deg,#fff,#ecfdf5); border:2px solid #6ee7b7;
+      font-weight:900; font-size:13px; color:#065f46; text-align:center; line-height:1.6;
+    }
+  </style>
+</head>
+<body>
+  <header class="yas-header">
+    <div class="yas-header-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="jelly-btn jb-purple" style="padding:8px 12px;font-size:12.5px;" onclick="location.href='../index.html'">🏠 منو</button>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#b45309;">🍳 آشپزخانه‌ی بفرمایید!</div>
+          <div style="font-size:11px;font-weight:700;color:#d97706;">مرحله ۲ • مهمان‌نوازی فاطمی ✨</div>
+        </div>
+      </div>
+
+      <div class="mode-pills">
+        <button id="mGuest" class="m-pill active" onclick="setMode('guest')">👩‍🍳 سفارش مهمان (۷ و ۹ ساله)</button>
+        <button id="mFree" class="m-pill" onclick="setMode('free')">🎀 آزاد کوچولوها (۴ ساله)</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="stat-chip stars" onclick="YasCore.openGarden()">⭐ <span data-stars>0</span></span>
+        <span class="stat-chip buds" onclick="YasCore.openGarden()">🌸 <span data-buds>0</span></span>
+        <button data-sound-btn class="soft-btn" style="padding:7px 10px;" onclick="YasCore.audio.toggle()">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="layout">
+      <!-- صحنه‌ی کارتونی آشپزخانه (الهام‌گرفته از نقاشی دخترها) -->
+      <div class="glass-card" style="padding:12px;">
+        <div class="kitchen-scene">
+          <svg id="kitchenSvg" class="kitchen-svg" viewBox="0 0 600 410" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fffef5"/><stop offset="100%" stop-color="#ffedd5"/></linearGradient>
+              <linearGradient id="skyWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#bae6fd"/></linearGradient>
+              <linearGradient id="counterG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient>
+              <radialGradient id="goldAura"><stop offset="0%" stop-color="#fde047" stop-opacity="0.85"/><stop offset="100%" stop-color="#fde047" stop-opacity="0"/></radialGradient>
+            </defs>
+
+            <!-- دیوار و کاشی‌های لطیف -->
+            <rect width="600" height="410" fill="url(#wallG)"/>
+            <g opacity="0.22" stroke="#f59e0b" stroke-width="1">
+              <line x1="0" y1="70" x2="600" y2="70"/><line x1="0" y1="140" x2="600" y2="140"/>
+              <line x1="0" y1="210" x2="600" y2="210"/><line x1="120" y1="0" x2="120" y2="275"/>
+              <line x1="240" y1="0" x2="240" y2="275"/><line x1="360" y1="0" x2="360" y2="275"/>
+              <line x1="480" y1="0" x2="480" y2="275"/>
+            </g>
+
+            <!-- پنجره آبی چهارخانه با ابر و آفتاب -->
+            <g transform="translate(425,22)">
+              <rect width="142" height="108" rx="12" fill="url(#skyWin)" stroke="#0284c7" stroke-width="5"/>
+              <circle cx="112" cy="28" r="14" fill="#fde047"/>
+              <g class="anim-cloud">
+                <ellipse cx="46" cy="36" rx="20" ry="11" fill="#fff" opacity="0.92"/>
+                <ellipse cx="62" cy="33" rx="16" ry="10" fill="#fff" opacity="0.92"/>
+              </g>
+              <line x1="71" y1="0" x2="71" y2="108" stroke="#0284c7" stroke-width="5"/>
+              <line x1="0" y1="54" x2="142" y2="54" stroke="#0284c7" stroke-width="5"/>
+            </g>
+
+            <!-- هاله نورانی بسم‌الله -->
+            <g id="bismillahAuraG" style="display:none;">
+              <circle cx="300" cy="240" r="115" fill="url(#goldAura)" class="bismillah-halo"/>
+              <text x="300" y="62" text-anchor="middle" font-size="22" font-weight="900" fill="#d97706">✨ بسم‌الله الرحمن الرحیم ✨</text>
+            </g>
+
+            <!-- مهمان دوست‌داشتنی در سمت چپ -->
+            <g id="guestChar" transform="translate(92,132)">
+              <ellipse cx="0" cy="128" rx="52" ry="38" id="guestDress" fill="#8b5cf6" stroke="#5b21b6" stroke-width="3"/>
+              <circle cx="0" cy="48" r="36" fill="#fde2cf" stroke="#d49e82" stroke-width="3"/>
+              <path id="guestScarf" d="M-38,52 Q-38,6 0,6 Q38,6 38,52 Q24,78 0,76 Q-24,78 -38,52 Z" fill="#a78bfa" stroke="#6d28d9" stroke-width="2.5" opacity="0.95"/>
+              <circle cx="0" cy="50" r="26" fill="#fde2cf"/>
+              <circle cx="-9" cy="46" r="3.4" fill="#1e293b"/><circle cx="9" cy="46" r="3.4" fill="#1e293b"/>
+              <circle cx="-10" cy="45" r="1.2" fill="#fff"/><circle cx="8" cy="45" r="1.2" fill="#fff"/>
+              <ellipse cx="-16" cy="54" rx="5" ry="3" fill="#fda4af" opacity="0.65"/>
+              <ellipse cx="16" cy="54" rx="5" ry="3" fill="#fda4af" opacity="0.65"/>
+              <path id="guestMouth" d="M-8,58 Q0,66 8,58" fill="none" stroke="#e11d48" stroke-width="2.6" stroke-linecap="round"/>
+              <!-- حباب گفتگوی مهمان -->
+              <rect x="-78" y="-58" width="180" height="44" rx="18" fill="#fff" stroke="#a855f7" stroke-width="2.5"/>
+              <text id="guestSpeech" x="12" y="-31" text-anchor="middle" font-size="14" font-weight="900" fill="#6b21a8">سلام! ماهی طلایی می‌خوام 🐟</text>
+            </g>
+
+            <!-- دختر آشپز با لباس سبز زمردی (مطابق نقاشی بچه‌ها!) -->
+            <g transform="translate(302,135)">
+              <path d="M-36,138 C-40,78 40,78 36,138 Z" fill="#10b981" stroke="#047857" stroke-width="3"/>
+              <path d="M-24,98 L24,98 L20,136 L-20,136 Z" fill="#fff" opacity="0.9" stroke="#d1fae5" stroke-width="2"/>
+              <circle cx="0" cy="48" r="32" fill="#fde2cf" stroke="#d49e82" stroke-width="3"/>
+              <!-- کلاه آشپزی سفید و موی فرفری بامزه -->
+              <path d="M-28,32 C-36,12 -14,2 0,10 C14,2 36,12 28,32 Z" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>
+              <circle cx="-30" cy="44" r="9" fill="#451a03"/><circle cx="30" cy="44" r="9" fill="#451a03"/>
+              <circle cx="-10" cy="48" r="3.4" fill="#1e293b"/><circle cx="10" cy="48" r="3.4" fill="#1e293b"/>
+              <circle cx="-11" cy="47" r="1.2" fill="#fff"/><circle cx="9" cy="47" r="1.2" fill="#fff"/>
+              <ellipse cx="-17" cy="56" rx="5" ry="3" fill="#fda4af" opacity="0.7"/>
+              <ellipse cx="17" cy="56" rx="5" ry="3" fill="#fda4af" opacity="0.7"/>
+              <path d="M-8,58 Q0,66 8,58" fill="none" stroke="#e11d48" stroke-width="2.6" stroke-linecap="round"/>
+              <!-- حباب بفرمایید -->
+              <g id="chefBubble" style="display:none;">
+                <rect x="-56" y="-56" width="112" height="38" rx="16" fill="#fef3c7" stroke="#f59e0b" stroke-width="2.5"/>
+                <text x="0" y="-32" text-anchor="middle" font-size="16" font-weight="900" fill="#b45309">بفرمایید! 🌸</text>
+              </g>
+            </g>
+
+            <!-- پیشخوان آشپزخانه و سینی حاشیه‌زرد ماهی‌های آبی -->
+            <rect x="0" y="268" width="600" height="142" fill="#fde68a" stroke="#f59e0b" stroke-width="4"/>
+            <rect x="18" y="286" width="228" height="106" rx="18" fill="#e0f2fe" stroke="#eab308" stroke-width="5"/>
+            <text x="132" y="308" text-anchor="middle" font-size="12" font-weight="900" fill="#0369a1">سینی ماهی‌های تازه 🐟</text>
+            <g class="anim-fish">
+              <ellipse cx="90" cy="340" rx="34" ry="13" fill="#38bdf8" stroke="#0284c7" stroke-width="2.2"/>
+              <polygon points="56,340 42,330 42,350" fill="#0ea5e9"/>
+              <circle cx="108" cy="337" r="3" fill="#0f172a"/>
+            </g>
+            <g class="anim-fish" style="animation-delay:-1.2s;">
+              <ellipse cx="175" cy="364" rx="30" ry="11" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2.2"/>
+              <polygon points="145,364 133,355 133,373" fill="#3b82f6"/>
+              <circle cx="192" cy="362" r="2.8" fill="#0f172a"/>
+            </g>
+
+            <!-- بشقاب و ظرف پخت تعاملی روی پیشخوان -->
+            <g id="plateGroup" transform="translate(410,338)">
+              <ellipse cx="0" cy="14" rx="108" ry="38" fill="#ffffff" stroke="#f472b6" stroke-width="4"/>
+              <ellipse cx="0" cy="12" rx="84" ry="26" fill="#fdf2f8"/>
+              <text id="plateFoodEmoji" x="0" y="18" text-anchor="middle" font-size="48">🐟</text>
+              <text id="plateGarnishText" x="0" y="-12" text-anchor="middle" font-size="22"></text>
+              <!-- بخار خوشمزه -->
+              <g id="steamG" style="display:none;">
+                <text x="-28" y="-26" font-size="20" class="anim-steam">♨️</text>
+                <text x="22" y="-32" font-size="20" class="anim-steam" style="animation-delay:.7s;">✨</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div id="statusBox" class="speech-banner">
+          🌸 اول دکمه‌ی نورانی <strong>«✨ بسم‌الله ✨»</strong> رو بزن تا غذات پربرکت و خوشمزه بشه!
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:11px;">
+          <button id="btnBismillah" class="jelly-btn jb-gold" onclick="sayBismillah()">✨ بسم‌الله الرحمن الرحیم ✨</button>
+          <button id="btnServe" class="jelly-btn jb-emerald" onclick="serveGuest()">🍽️ بفرمایید! (تقدیم به مهمان)</button>
+          <button class="jelly-btn jb-cyan" onclick="saveKitchenPhoto()">📸 عکس از دست‌پختم</button>
+        </div>
+      </div>
+
+      <!-- پنل کنترل آشپزی -->
+      <div class="glass-card">
+        <div style="font-weight:900;font-size:14.5px;color:#92400e;margin-bottom:8px;">🍲 ۱. غذای امروز رو انتخاب کن:</div>
+        <div id="dishGrid" class="dish-grid"></div>
+
+        <div style="font-weight:900;font-size:14px;color:#92400e;">🔥 ۲. مراحل پخت‌وپز (روی دکمه‌ها بزن):</div>
+        <div class="cook-progress"><div id="cookBar" class="cook-bar"></div></div>
+        <div id="stepBtns" class="step-row"></div>
+
+        <div style="font-weight:900;font-size:14px;color:#92400e;margin:12px 0 8px;">🌿 ۳. تزیین بشقاب مهمان:</div>
+        <div id="garnishRow" class="garnish-row"></div>
+
+        <div style="margin-top:14px;padding:11px;border-radius:16px;background:linear-gradient(135deg,#fffbeb,#fdf2f8);border:1.5px solid #fde68a;font-size:12.5px;font-weight:800;color:#78350f;line-height:1.65;">
+          💛 <strong>ادب مهمان‌نوازی حضرت زهرا (س):</strong> هر وقت غذا رو با «بسم‌الله» می‌پزیم و با لبخند و «بفرمایید» به مهمان تعارف می‌کنیم، دوتا غنچه‌ی برکت در باغ یاس می‌روید!
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../shared/yas-core.js"></script>
+  <script>
+    const DISHES = [
+      { id:'fish', name:'ماهی طلایی', raw:'🐟', cooked:'🍤', steps:['🧂 نمک و لیمو','🔥 سرخ کردن','✨ بخار طلایی'] },
+      { id:'bread', name:'نان گرم و خرما', raw:'🌾', cooked:'🫓', steps:['🥣 خمیرگیری','🔥 پخت در تنور','🌴 چیدن خرما'] },
+      { id:'soup', name:'سوپِ مهربانی', raw:'🥕', cooked:'🍲', steps:['🥕 خرد کردن سبزی','🥄 هم زدن قابلمه','🔥 جا افتادن'] },
+      { id:'cake', name:'شربت و کیک یاس', raw:'🍓', cooked:'🍰', steps:['🥣 هم زدن کیک','🌹 عطر گلاب','🎂 آماده شدن'] }
+    ];
+    const GUESTS = [
+      { name:'مادربزرگ مهربان', dress:'#8b5cf6', scarf:'#c4b5fd', want:'fish', thanks:'دستت درد نکنه عزیزم! چقدر خوشمزه بود! 💖' },
+      { name:'دوست صمیمی مدرسه', dress:'#ec4899', scarf:'#f9a8d4', want:'cake', thanks:'وای چه کیک یاس معطری! آفرین! 🌟' },
+      { name:'همسایه‌ی مهربان', dress:'#0ea5e9', scarf:'#bae6fd', want:'soup', thanks:'خدا برکت بده! عجب سوپ گرمی! 🌸' },
+      { name:'مهمان کوچولوی باغ', dress:'#10b981', scarf:'#a7f3d0', want:'bread', thanks:'به به! نان گرم و خرما عالیه! ✨' }
+    ];
+    const GARNISHES = ['🍋','🌿','🌸','🍓','⭐'];
+
+    let mode = 'guest';
+    let guestIdx = 0;
+    let curDish = DISHES[0];
+    let stepDone = 0;
+    let hasBismillah = false;
+    let usedGarnishes = [];
+
+    function setMode(m) {
+      mode = m; YasCore.audio.pop();
+      document.getElementById('mGuest').classList.toggle('active', m === 'guest');
+      document.getElementById('mFree').classList.toggle('active', m === 'free');
+      updateGuestUI();
+    }
+
+    function updateGuestUI() {
+      const g = GUESTS[guestIdx];
+      document.getElementById('guestDress').setAttribute('fill', g.dress);
+      document.getElementById('guestScarf').setAttribute('fill', g.scarf);
+      const wantedDish = DISHES.find(d => d.id === g.want);
+      document.getElementById('guestSpeech').textContent = mode === 'guest'
+        ? `${g.name}: ${wantedDish.name} می‌خوام ${wantedDish.cooked}`
+        : `${g.name}: هر چی بپزی دوست دارم! 🌸`;
+    }
+
+    function renderDishes() {
+      const grid = document.getElementById('dishGrid'); grid.innerHTML = '';
+      DISHES.forEach(d => {
+        const c = document.createElement('div');
+        c.className = 'dish-card' + (curDish.id === d.id ? ' sel' : '');
+        c.innerHTML = `<span class="dish-emoji">${d.cooked}</span><div class="dish-name">${d.name}</div>`;
+        c.onclick = () => {
+          curDish = d; stepDone = 0; usedGarnishes = [];
+          YasCore.audio.pop(); YasCore.haptic(15);
+          renderDishes(); renderSteps(); renderGarnishes(); updatePlate();
+        };
+        grid.appendChild(c);
+      });
+    }
+
+    function renderSteps() {
+      const row = document.getElementById('stepBtns'); row.innerHTML = '';
+      curDish.steps.forEach((lbl, idx) => {
+        const b = document.createElement('button');
+        const done = idx < stepDone;
+        b.className = 'jelly-btn ' + (done ? 'jb-emerald' : idx === stepDone ? 'jb-pink' : 'jb-purple');
+        b.style.opacity = idx > stepDone ? '0.55' : '1';
+        b.textContent = (done ? '✅ ' : '') + lbl;
+        b.onclick = () => {
+          if (idx > stepDone && mode === 'guest') {
+            YasCore.showToast('اول مرحله قبلی رو انجام بده! ✨'); return;
+          }
+          stepDone = Math.min(3, Math.max(stepDone, idx + 1));
+          YasCore.audio.bubble(); YasCore.haptic(20);
+          YasCore.burst(window.innerWidth * 0.4, window.innerHeight * 0.45, 16, ['✨','♨️']);
+          renderSteps(); updatePlate();
+        };
+        row.appendChild(b);
+      });
+      document.getElementById('cookBar').style.width = (stepDone / 3) * 100 + '%';
+    }
+
+    function renderGarnishes() {
+      const row = document.getElementById('garnishRow'); row.innerHTML = '';
+      GARNISHES.forEach(g => {
+        const b = document.createElement('button');
+        b.className = 'g-btn' + (usedGarnishes.includes(g) ? ' used' : '');
+        b.textContent = g + ' تزیین';
+        b.onclick = () => {
+          if (!usedGarnishes.includes(g)) usedGarnishes.push(g);
+          else usedGarnishes = usedGarnishes.filter(x => x !== g);
+          YasCore.audio.pop(); renderGarnishes(); updatePlate();
+        };
+        row.appendChild(b);
+      });
+    }
+
+    function updatePlate() {
+      document.getElementById('plateFoodEmoji').textContent = stepDone >= 3 ? curDish.cooked : curDish.raw;
+      document.getElementById('plateGarnishText').textContent = usedGarnishes.join(' ');
+      document.getElementById('steamG').style.display = stepDone >= 2 ? 'block' : 'none';
+      if (stepDone >= 3) {
+        document.getElementById('statusBox').innerHTML = `✨ <strong>${curDish.name}</strong> آماده شد! حالا با دکمه «🍽️ بفرمایید!» تقدیم مهمان کن!`;
+      }
+    }
+
+    function sayBismillah() {
+      hasBismillah = true;
+      document.getElementById('bismillahAuraG').style.display = 'block';
+      YasCore.audio.blessing();
+      YasCore.addReward(2, 2, '✨ برکت بسم‌الله! +۲ ستاره و +۲ غنچه یاس');
+      YasCore.burst(window.innerWidth / 2, window.innerHeight / 3, 40, ['✨','🌸','💛']);
+      document.getElementById('statusBox').innerHTML = '🌟 احسنت! با نام خدا غذات نورانی و پربرکت شد! حالا بپزش!';
+    }
+
+    function serveGuest() {
+      if (stepDone < 3 && mode === 'guest') {
+        YasCore.showToast('اول همه‌ی مراحل پخت رو کامل کن! 🍳'); return;
+      }
+      const g = GUESTS[guestIdx];
+      const match = (mode === 'free' || curDish.id === g.want);
+      const stars = (match ? 6 : 3) + (hasBismillah ? 2 : 0) + (usedGarnishes.length ? 2 : 0);
+      const buds = 2 + (hasBismillah ? 1 : 0);
+
+      document.getElementById('chefBubble').style.display = 'block';
+      document.getElementById('guestSpeech').textContent = g.thanks;
+      document.getElementById('statusBox').innerHTML = `🎉 <strong>${g.name}:</strong> ${g.thanks} (+${stars} ستاره و +${buds} غنچه یاس)`;
+
+      YasCore.addReward(stars, buds, `🍽️ بفرمایید! +${stars} ستاره و +${buds} غنچه گرفتی!`);
+      YasCore.audio.fanfare();
+      YasCore.burst(window.innerWidth / 2, window.innerHeight / 3, 65, ['🌸','⭐','💖','🍽️']);
+
+      setTimeout(() => {
+        document.getElementById('chefBubble').style.display = 'none';
+        document.getElementById('bismillahAuraG').style.display = 'none';
+        hasBismillah = false; stepDone = 0; usedGarnishes = [];
+        guestIdx = (guestIdx + 1) % GUESTS.length;
+        updateGuestUI(); renderSteps(); renderGarnishes(); updatePlate();
+      }, 2800);
+    }
+
+    function saveKitchenPhoto() {
+      const svgStr = new XMLSerializer().serializeToString(document.getElementById('kitchenSvg'));
+      const url = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width=900; c.height=680;
+        const x = c.getContext('2d');
+        x.fillStyle='#fffbeb'; x.fillRect(0,0,900,680);
+        x.fillStyle='#b45309'; x.font='bold 28px Tahoma,sans-serif'; x.textAlign='center';
+        x.fillText('🍳 آشپزخانه‌ی بفرمایید • شهر بازی یاس و رنگ 🌸', 450, 46);
+        x.drawImage(img, 20, 62, 860, 595);
+        URL.revokeObjectURL(url);
+        YasCore.saveImage(c.toDataURL('image/png'), 'ashpazkhane-yas.png');
+      };
+      img.src = url;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateGuestUI(); renderDishes(); renderSteps(); renderGarnishes(); updatePlate();
+    });
+  </script>
+</body>
+</html>

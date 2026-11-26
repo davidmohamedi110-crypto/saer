@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>مرحله ۵ • گربه‌ی کوچولوی یاس</title>
+  <link rel="stylesheet" href="../shared/yas-theme.css" />
+  <style>
+    .wrap { position:relative; z-index:2; max-width:1100px; margin:10px auto 26px; padding:0 10px; }
+
+    /* Need meters */
+    .meters { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-bottom:10px; }
+    @media (max-width:600px){ .meters { grid-template-columns:repeat(2, 1fr); } }
+    .meter-box { background:rgba(255,255,255,.92); border:2px solid #fbcfe8; border-radius:16px; padding:6px 10px; }
+    .m-lbl { font-size:11.5px; font-weight:900; color:#4c1d95; display:flex; justify-content:space-between; }
+    .m-track { height:10px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:4px; }
+    .m-fill { height:100%; border-radius:999px; transition:width .35s var(--spring); }
+
+    /* Main Room + Circular Room Buttons (inspired by child's drawing!) */
+    .room-layout { display:grid; grid-template-columns:1.25fr 0.95fr; gap:14px; align-items:start; }
+    @media (max-width:860px){ .room-layout { grid-template-columns:1fr; } }
+
+    .stage-box {
+      position:relative; border-radius:28px; overflow:hidden; border:3.5px solid #fff;
+      box-shadow:0 18px 36px rgba(124,58,237,.16);
+      min-height:370px; transition:background .4s ease;
+    }
+    .room-svg { width:100%; height:auto; display:block; cursor:pointer; }
+
+    /* Circular colorful room buttons (just like the circles on the side & bottom of the drawing!) */
+    .room-circles {
+      display:flex; flex-wrap:wrap; justify-content:center; gap:9px;
+      margin:10px 0;
+    }
+    .rc-btn {
+      width:74px; height:74px; border-radius:50%; border:3px solid #fff;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      color:#fff; font-family:inherit; font-weight:900; font-size:11px; cursor:pointer;
+      box-shadow:0 7px 16px rgba(0,0,0,.18); transition:transform .18s var(--spring);
+      text-shadow:0 1px 2px rgba(0,0,0,.25);
+    }
+    .rc-btn span:first-child { font-size:24px; line-height:1.1; }
+    .rc-btn.active { transform:scale(1.13); outline:4px solid #fbbf24; }
+    .rc-btn:active { transform:scale(0.95); }
+
+    .ctrl-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+    .item-btn {
+      border:2px solid #e9d5ff; background:#fff; border-radius:16px; padding:10px 8px;
+      font-family:inherit; font-weight:900; font-size:12.5px; color:#312546;
+      cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;
+      transition:transform .14s var(--spring), background .15s;
+    }
+    .item-btn:active { transform:scale(0.95); }
+    .item-btn .em { font-size:28px; }
+    .item-btn.sel { border-color:#ec4899; background:#fdf2f8; }
+
+    /* Cat Animations */
+    @keyframes catFloat { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+    @keyframes catJump { 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-48px); } }
+    @keyframes tailWag { 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(12deg); } }
+    @keyframes bubbleUp { 0%{ transform:translateY(0) scale(.8); opacity:.9; } 100%{ transform:translateY(-40px) scale(1.2); opacity:0; } }
+
+    .cat-idle { animation:catFloat 3s ease-in-out infinite; }
+    .cat-jump { animation:catJump 0.55s ease-in-out infinite; }
+    .cat-tail { transform-origin:330px 300px; animation:tailWag 2.2s ease-in-out infinite; }
+    .bub-up { animation:bubbleUp 1.8s ease-out infinite; }
+
+    .cat-speech {
+      background:rgba(255,255,255,.94); border:2px solid #f9a8d4; border-radius:16px;
+      padding:9px 13px; text-align:center; font-weight:900; font-size:13px; color:#831843;
+      margin-top:8px;
+    }
+  </style>
+</head>
+<body>
+  <header class="yas-header">
+    <div class="yas-header-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="jelly-btn jb-purple" style="padding:8px 12px;font-size:12.5px;" onclick="location.href='../index.html'">🏠 منو</button>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#0284c7;">
+            🐱 <span id="catNameLbl" onclick="renameCat()" style="cursor:pointer;text-decoration:underline dotted;">پیشی یاس</span> ✏️
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#ec4899;">مرحله ۵ • مراقبت از گربه‌ی مهربون ✨</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="stat-chip stars" onclick="YasCore.openGarden()">⭐ <span data-stars>0</span></span>
+        <span class="stat-chip buds" onclick="YasCore.openGarden()">🌸 <span data-buds>0</span></span>
+        <button data-sound-btn class="soft-btn" style="padding:7px 10px;" onclick="YasCore.audio.toggle()">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- نوارهای وضعیت پیشی -->
+    <div class="meters">
+      <div class="meter-box">
+        <div class="m-lbl"><span>🍽️ سیری</span><span id="vFood">80%</span></div>
+        <div class="m-track"><div id="bFood" class="m-fill" style="width:80%;background:linear-gradient(90deg,#fb923c,#f59e0b);"></div></div>
+      </div>
+      <div class="meter-box">
+        <div class="m-lbl"><span>🧼 پاکیزگی</span><span id="vClean">85%</span></div>
+        <div class="m-track"><div id="bClean" class="m-fill" style="width:85%;background:linear-gradient(90deg,#38bdf8,#06b6d4);"></div></div>
+      </div>
+      <div class="meter-box">
+        <div class="m-lbl"><span>💖 شادی</span><span id="vFun">90%</span></div>
+        <div class="m-track"><div id="bFun" class="m-fill" style="width:90%;background:linear-gradient(90deg,#ff4fa3,#a855f7);"></div></div>
+      </div>
+      <div class="meter-box">
+        <div class="m-lbl"><span>🌙 انرژی</span><span id="vSleep">85%</span></div>
+        <div class="m-track"><div id="bSleep" class="m-fill" style="width:85%;background:linear-gradient(90deg,#34d399,#10b981);"></div></div>
+      </div>
+    </div>
+
+    <!-- دکمه‌های دایره‌ای ۶ اتاق (دقیقاً به سبک نقاشی دخترتان!) -->
+    <div class="room-circles">
+      <button id="rFood" class="rc-btn active" style="background:linear-gradient(135deg,#fb923c,#e11d48);" onclick="setRoom('food')"><span>🍽️</span><span>غذا و پخت</span></button>
+      <button id="rBath" class="rc-btn" style="background:linear-gradient(135deg,#34d399,#0284c7);" onclick="setRoom('bath')"><span>🛁</span><span>حمام و دسشویی</span></button>
+      <button id="rBeauty" class="rc-btn" style="background:linear-gradient(135deg,#ff6db8,#9333ea);" onclick="setRoom('beauty')"><span>💄</span><span>آراستگی</span></button>
+      <button id="rSport" class="rc-btn" style="background:linear-gradient(135deg,#facc15,#10b981);" onclick="setRoom('sport')"><span>🤸</span><span>ورزش</span></button>
+      <button id="rSleep" class="rc-btn" style="background:linear-gradient(135deg,#6366f1,#312e81);" onclick="setRoom('sleep')"><span>🌙</span><span>اتاق خواب</span></button>
+      <button id="rShop" class="rc-btn" style="background:linear-gradient(135deg,#f43f5e,#f59e0b);" onclick="setRoom('shop')"><span>🛍️</span><span>فروشگاه</span></button>
+    </div>
+
+    <div class="room-layout">
+      <!-- صحنه‌ی تعاملی پیشی -->
+      <div class="glass-card" style="padding:12px;">
+        <div class="stage-box">
+          <svg id="catRoomSvg" class="room-svg" viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" onclick="petCat(event)"></svg>
+        </div>
+        <div id="catSpeech" class="cat-speech">🐾 میو! روی من بزن تا نازم کنی، یا منو ببر اتاق‌های قشنگ! 💖</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px;">
+          <button class="jelly-btn jb-pink" onclick="petCat()">💖 ناز کردن پیشی</button>
+          <button class="jelly-btn jb-cyan" onclick="saveCatPhoto()">📸 عکس یادگاری از پیشی</button>
+        </div>
+      </div>
+
+      <!-- پنل ابزارهای اتاق فعال -->
+      <div class="glass-card">
+        <div id="roomPanelTitle" style="font-weight:900;font-size:15px;color:#6d28d9;margin-bottom:10px;"></div>
+        <div id="roomControls"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../shared/yas-core.js"></script>
+  <script>
+    const CAT_KEY = 'yasCatStateV2';
+    let cat = {
+      name: 'پیشی یاس',
+      room: 'food',
+      food: 80, clean: 85, fun: 90, sleep: 85,
+      dress: 'pinkStar', // pinkStar (from drawing!), yellowSun, mintYas, purpleRoyal
+      crown: 'none',
+      makeup: '',
+      night: false,
+      inTub: false,
+      soapy: false,
+      toiletCurtain: false,
+      jumping: false,
+      jumps: 0,
+      bismillah: false,
+      unlocked: ['pinkStar', 'yellowSun'],
+      giftClaimed: ''
+    };
+
+    const DRESSES = [
+      { id:'pinkStar', name:'پیراهن پرنسسی صورتی ⭐', c1:'#ff85c8', c2:'#e11d74', sym:'⭐', price:0 },
+      { id:'yellowSun', name:'پیراهن آفتابی زرد ☀️', c1:'#fde047', c2:'#f59e0b', sym:'🌼', price:0 },
+      { id:'mintYas', name:'پیراهن یاس فیروزه‌ای 🌸', c1:'#5eead4', c2:'#0d9488', sym:'🌸', price:8 },
+      { id:'purpleRoyal', name:'پیراهن شبِ پرستاره 👑', c1:'#c084fc', c2:'#6d28d9', sym:'✨', price:12 }
+    ];
+
+    function loadCat() {
+      try {
+        const s = JSON.parse(localStorage.getItem(CAT_KEY) || 'null');
+        if (s) cat = Object.assign(cat, s);
+      } catch(e){}
+      document.getElementById('catNameLbl').textContent = cat.name;
+    }
+    function saveCat() {
+      try { localStorage.setItem(CAT_KEY, JSON.stringify(cat)); } catch(e){}
+      updateMeters();
+    }
+    function renameCat() {
+      const n = prompt('اسم قشنگ گربه‌ت رو چی بذاریم؟ 🐱', cat.name);
+      if (n && n.trim()) { cat.name = n.trim().slice(0, 18); document.getElementById('catNameLbl').textContent = cat.name; saveCat(); }
+    }
+
+    function clamp(v) { return Math.max(10, Math.min(100, Math.round(v))); }
+    function updateMeters() {
+      [['Food',cat.food],['Clean',cat.clean],['Fun',cat.fun],['Sleep',cat.sleep]].forEach(([k,v]) => {
+        document.getElementById('v'+k).textContent = v + '%';
+        document.getElementById('b'+k).style.width = v + '%';
+      });
+    }
+    function say(txt) { document.getElementById('catSpeech').textContent = txt; }
+
+    function setRoom(r) {
+      cat.room = r;
+      cat.inTub = (r === 'bath');
+      cat.toiletCurtain = false;
+      cat.jumping = false;
+      if (r !== 'sleep') cat.night = false;
+      YasCore.audio.pop(); YasCore.haptic(15);
+      ['Food','Bath','Beauty','Sport','Sleep','Shop'].forEach(k => {
+        document.getElementById('r'+k).classList.toggle('active', r === k.toLowerCase());
+      });
+      renderRoomControls();
+      renderCatScene();
+    }
+
+    function petCat(e) {
+      YasCore.audio.meow(); YasCore.audio.purr(); YasCore.haptic(20);
+      cat.fun = clamp(cat.fun + 6);
+      saveCat();
+      say(`💖 میو میو! ${cat.name} عاشق ناز کردنه! (+۱ ستاره مهربانی)`);
+      YasCore.addReward(1, 0);
+      const x = e ? e.clientX : window.innerWidth * 0.4;
+      const y = e ? e.clientY : window.innerHeight * 0.4;
+      YasCore.burst(x, y, 16, ['💖','🐾','✨']);
+    }
+
+    // ---------------- RENDER CAT & 6 RICH ROOMS ----------------
+    function renderCatScene() {
+      const dr = DRESSES.find(d => d.id === cat.dress) || DRESSES[0];
+      let bgSvg = '';
+      let fgSvg = '';
+
+      if (cat.room === 'food') {
+        bgSvg = `
+          <rect width="560" height="400" fill="#fffbeb"/>
+          <rect y="290" width="560" height="110" fill="#fde68a" stroke="#f59e0b" stroke-width="4"/>
+          <rect x="38" y="34" width="120" height="86" rx="12" fill="#bae6fd" stroke="#0284c7" stroke-width="4"/>
+          <line x1="98" y1="34" x2="98" y2="120" stroke="#0284c7" stroke-width="3"/>
+          <line x1="38" y1="77" x2="158" y2="77" stroke="#0284c7" stroke-width="3"/>
+          ${cat.bismillah ? `<text x="280" y="42" text-anchor="middle" font-size="20" font-weight="900" fill="#d97706">✨ بسم‌الله الرحمن الرحیم ✨</text>` : ''}
+          <!-- خوراکی‌های روی میز مطابق نقاشی -->
+          <text x="90" y="344" font-size="42">🍔</text>
+          <text x="148" y="344" font-size="40">🍟</text>
+          <text x="455" y="344" font-size="42">🍏</text>
+          <text x="400" y="346" font-size="38">🍲</text>`;
+      } else if (cat.room === 'bath') {
+        // دیوار کاشی سبز و وان صورتی دقیقاً مثل نقاشی دخترتان!
+        let tiles = '';
+        for (let x=0; x<560; x+=40) tiles += `<line x1="${x}" y1="0" x2="${x}" y2="290" stroke="#16a34a" stroke-opacity="0.28" stroke-width="2"/>`;
+        for (let y=0; y<290; y+=40) tiles += `<line x1="0" y1="${y}" x2="560" y2="${y}" stroke="#16a34a" stroke-opacity="0.28" stroke-width="2"/>`;
+        bgSvg = `
+          <rect width="560" height="290" fill="#bbf7d0"/>
+          ${tiles}
+          <rect y="290" width="560" height="110" fill="#e0f2fe"/>
+          <text x="460" y="72" font-size="38">🚿</text>
+          <text x="86" y="74" font-size="36">🧼</text>`;
+        fgSvg = cat.toiletCurtain ? `
+          <rect x="135" y="60" width="290" height="310" rx="22" fill="#f9a8d4" stroke="#ec4899" stroke-width="5"/>
+          <text x="280" y="210" text-anchor="middle" font-size="32" font-weight="900" fill="#fff">⭐ پرده‌ی ادب ⭐</text>
+          <text x="280" y="255" text-anchor="middle" font-size="18" font-weight="900" fill="#fff">الآن دست‌هاش رو هم می‌شوره! 🧼</text>` : `
+          <!-- وان صورتی بزرگ -->
+          <path d="M125,270 L435,270 L410,362 Q280,382 150,362 Z" fill="#f9a8d4" stroke="#ec4899" stroke-width="5"/>
+          <rect x="115" y="256" width="330" height="20" rx="10" fill="#fbcfe8" stroke="#ec4899" stroke-width="3"/>
+          ${cat.soapy ? `<g class="bub-up"><circle cx="200" cy="238" r="22" fill="#fff" opacity=".88"/><circle cx="255" cy="226" r="26" fill="#fff" opacity=".88"/><circle cx="315" cy="232" r="24" fill="#fff" opacity=".88"/><circle cx="362" cy="242" r="18" fill="#fff" opacity=".88"/><text x="280" y="135" text-anchor="middle" font-size="30">🫧🫧🫧</text></g>` : ''}`;
+      } else if (cat.room === 'beauty') {
+        // قفسه شیشه‌های رنگی آراستگی مطابق نقاشی
+        let bottles = '';
+        const bCols = ['#ef4444','#facc15','#22c55e','#38bdf8','#a855f7','#ff4fa3','#fb923c','#06b6d4'];
+        bCols.forEach((c,i) => {
+          const bx = 54 + i*60;
+          bottles += `<rect x="${bx}" y="324" width="22" height="38" rx="6" fill="${c}" stroke="#fff" stroke-width="2.5"/><rect x="${bx+5}" y="312" width="12" height="12" rx="3" fill="#334155"/>`;
+        });
+        bgSvg = `
+          <rect width="560" height="400" fill="#fdf2f8"/>
+          <ellipse cx="280" cy="170" rx="165" ry="130" fill="#ffffff" stroke="#f9a8d4" stroke-width="8"/>
+          <rect y="356" width="560" height="44" fill="#fbcfe8" stroke="#ec4899" stroke-width="3"/>
+          ${bottles}`;
+      } else if (cat.room === 'sport') {
+        bgSvg = `
+          <rect width="560" height="260" fill="#bae6fd"/>
+          <circle cx="482" cy="64" r="34" fill="#fde047"/>
+          <rect y="260" width="560" height="140" fill="#86efac" stroke="#22c55e" stroke-width="4"/>
+          <text x="68" y="340" font-size="40">⚽</text>
+          <text x="468" y="340" font-size="38">🌷</text>
+          <text x="280" y="44" text-anchor="middle" font-size="19" font-weight="900" fill="#0369a1">🤸 پرش‌های ورزشی امروز: ${cat.jumps}</text>`;
+      } else if (cat.room === 'sleep') {
+        bgSvg = cat.night ? `
+          <rect width="560" height="400" fill="#1e1b4b"/>
+          <text x="86" y="76" font-size="42">🌙</text>
+          <text x="430" y="72" font-size="28">✨⭐✨</text>
+          <text x="180" y="105" font-size="22">⭐</text>` : `
+          <rect width="560" height="400" fill="#eff6ff"/>
+          <text x="86" y="76" font-size="42">☀️</text>`;
+        // تخت خواب با بالش سبز و پتوی صورتی (دقیقاً مطابق نقاشی!)
+        fgSvg = `
+          <rect x="92" y="276" width="376" height="96" rx="22" fill="#f472b6" stroke="#db2777" stroke-width="4"/>
+          <rect x="112" y="256" width="110" height="46" rx="18" fill="#4ade80" stroke="#16a34a" stroke-width="3"/>
+          ${cat.night ? `<text x="380" y="155" font-size="32" fill="#fef08a">💤 💤</text>` : ''}`;
+      } else {
+        bgSvg = `
+          <rect width="560" height="400" fill="#fff7ed"/>
+          <rect x="30" y="26" width="500" height="60" rx="18" fill="#ec4899"/>
+          <text x="280" y="65" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">🛍️ بوتیک و فروشگاه یاس 🌸</text>
+          <rect y="310" width="560" height="90" fill="#fde68a"/>`;
+      }
+
+      const eyesSvg = cat.night
+        ? `<path d="M242,150 Q254,160 266,150" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+           <path d="M294,150 Q306,160 318,150" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>`
+        : `<circle cx="254" cy="148" r="11" fill="#1e293b"/><circle cx="306" cy="148" r="11" fill="#1e293b"/>
+           <circle cx="250" cy="144" r="4" fill="#fff"/><circle cx="302" cy="144" r="4" fill="#fff"/>`;
+
+      const crownSvg = cat.crown==='crown' ? `<text x="280" y="88" text-anchor="middle" font-size="44">👑</text>` :
+                       cat.crown==='bow' ? `<text x="280" y="92" text-anchor="middle" font-size="40">🎀</text>` :
+                       cat.crown==='flower' ? `<text x="280" y="90" text-anchor="middle" font-size="40">🌸</text>` : '';
+
+      const catClass = cat.jumping ? 'cat-jump' : 'cat-idle';
+      const catTransform = cat.room === 'sleep' ? 'translate(0, 16)' : (cat.room === 'bath' ? 'translate(0, 12)' : '');
+
+      const catSvg = `
+        <g class="${catClass}" transform="${catTransform}">
+          <!-- دم بامزه -->
+          <path class="cat-tail" d="M336,296 Q398,274 394,224" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+          <path class="cat-tail" d="M336,296 Q398,274 394,224" fill="none" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/>
+          <!-- پیراهن پرنسسی گربه -->
+          ${cat.room !== 'bath' ? `
+            <path d="M232,202 L328,202 L374,344 Q280,366 186,344 Z" fill="url(#dressGrad)" stroke="${dr.c2}" stroke-width="3.5"/>
+            <text x="280" y="284" text-anchor="middle" font-size="34">${dr.sym}</text>
+            <ellipse cx="222" cy="242" rx="18" ry="12" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>
+            <ellipse cx="338" cy="242" rx="18" ry="12" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>` : `
+            <ellipse cx="280" cy="260" rx="52" ry="48" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>`}
+          <!-- گوش‌ها -->
+          <polygon points="222,126 234,76 266,112" fill="#fff" stroke="#cbd5e1" stroke-width="3.5"/>
+          <polygon points="338,126 326,76 294,112" fill="#fff" stroke="#cbd5e1" stroke-width="3.5"/>
+          <polygon points="230,118 238,90 258,112" fill="#fbcfe8"/>
+          <polygon points="330,118 322,90 302,112" fill="#fbcfe8"/>
+          <!-- سر سفید گربه -->
+          <ellipse cx="280" cy="152" rx="64" ry="54" fill="#ffffff" stroke="#cbd5e1" stroke-width="3.5"/>
+          ${eyesSvg}
+          <!-- گونه‌های صورتی و سبیل -->
+          <ellipse cx="234" cy="166" rx="11" ry="6" fill="#fda4af" opacity="${cat.makeup==='blush'?0.95:0.55}"/>
+          <ellipse cx="326" cy="166" rx="11" ry="6" fill="#fda4af" opacity="${cat.makeup==='blush'?0.95:0.55}"/>
+          <polygon points="280,168 273,160 287,160" fill="#fb7185"/>
+          <path d="M268,174 Q280,184 292,174" fill="none" stroke="#db2777" stroke-width="3" stroke-linecap="round"/>
+          <g stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round">
+            <line x1="196" y1="158" x2="224" y2="162"/><line x1="196" y1="170" x2="224" y2="170"/>
+            <line x1="364" y1="158" x2="336" y2="162"/><line x1="364" y1="170" x2="336" y2="170"/>
+          </g>
+          ${cat.makeup==='stars' ? `<text x="234" y="132" font-size="18">⭐</text><text x="312" y="132" font-size="18">⭐</text>` : ''}
+          ${cat.makeup==='hearts' ? `<text x="232" y="132" font-size="18">💖</text><text x="312" y="132" font-size="18">💖</text>` : ''}
+          ${crownSvg}
+        </g>`;
+
+      document.getElementById('catRoomSvg').innerHTML = `
+        <defs>
+          <linearGradient id="dressGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${dr.c1}"/><stop offset="100%" stop-color="${dr.c2}"/></linearGradient>
+        </defs>
+        ${bgSvg}
+        ${catSvg}
+        ${fgSvg}
+      `;
+    }
+
+    // ---------------- ROOM CONTROLS ----------------
+    function renderRoomControls() {
+      const title = document.getElementById('roomPanelTitle');
+      const box = document.getElementById('roomControls');
+      box.innerHTML = '';
+
+      if (cat.room === 'food') {
+        title.textContent = '🍽️ آشپزخانه و خوراکی‌های خوشمزه';
+        const foods = [
+          { em:'✨', l:'دکمه‌ی بسم‌الله', fn:() => { cat.bismillah=true; YasCore.audio.blessing(); YasCore.addReward(2,1,'✨ بسم‌الله! غذای پیشی پربرکت شد!'); renderCatScene(); } },
+          { em:'🍔', l:'همبرگر گرم', fn:() => feed('همبرگر', 22) },
+          { em:'🍟', l:'سیب‌زمینی ترد', fn:() => feed('سیب‌زمینی', 16) },
+          { em:'🍏', l:'شربت سیب سبز', fn:() => feed('شربت سیب سبز', 15) },
+          { em:'🐟', l:'ماهی تازه', fn:() => feed('ماهی خوشمزه', 25) },
+          { em:'🍲', l:'سوپ رنگین‌کمانی یاس', fn:() => feed('سوپ یاس', 30, true) }
+        ];
+        box.innerHTML = `<div class="ctrl-grid" id="cg"></div>`;
+        const cg = box.querySelector('#cg');
+        foods.forEach(f => {
+          const b = document.createElement('button'); b.className='item-btn';
+          b.innerHTML = `<span class="em">${f.em}</span><span>${f.l}</span>`;
+          b.onclick = f.fn; cg.appendChild(b);
+        });
+      } else if (cat.room === 'bath') {
+        title.textContent = '🛁 حمام حبابی و دستشویی تمیز';
+        const acts = [
+          { em:'🚽', l:'رفتن به دستشویی', fn:() => { cat.toiletCurtain=true; YasCore.audio.bubble(); renderCatScene(); say('🌸 پشت پرده رفت... الآن دست‌هاش رو هم می‌شوره!'); setTimeout(()=>{ cat.toiletCurtain=false; cat.clean=clamp(cat.clean+15); saveCat(); YasCore.addReward(2,1,'✨ نظافت نشانه ایمانه! +۲ ستاره'); renderCatScene(); say('🧼 دست‌هام رو با صابون شستم! آخ جون چقدر تمیزم!'); }, 2200); } },
+          { em:'🧽', l:'۱. اسفنج صابونی', fn:() => { cat.soapy=true; YasCore.audio.bubble(); say('🫧 وای چقدر حباب‌های قشنگ!'); renderCatScene(); } },
+          { em:'🚿', l:'۲. دوش آب گرم', fn:() => { cat.soapy=false; cat.clean=100; saveCat(); YasCore.audio.sparkle(); YasCore.addReward(3,1,'🛁 پیشی برق افتاد! +۳ ستاره'); say('✨ آخیش! آب گرم عالی بود! حالا تمیزِ تمیزم!'); renderCatScene(); YasCore.burst(window.innerWidth*0.4, window.innerHeight*0.4, 30, ['🫧','✨']); } },
+          { em:'💨', l:'۳. سشوار و حوله', fn:() => { cat.clean=100; cat.fun=clamp(cat.fun+10); saveCat(); YasCore.audio.purr(); say('💨 موهام پف‌کی و خشک شد! مرسی عزیزم!'); } }
+        ];
+        box.innerHTML = `<div class="ctrl-grid" id="cg"></div>`;
+        acts.forEach(a => {
+          const b = document.createElement('button'); b.className='item-btn';
+          b.innerHTML = `<span class="em">${a.em}</span><span>${a.l}</span>`;
+          b.onclick = a.fn; box.querySelector('#cg').appendChild(b);
+        });
+      } else if (cat.room === 'beauty') {
+        title.textContent = '💄 کمد لباس و شیشه‌های آراستگی';
+        let html = `<div style="margin-bottom:8px;"><button class="jelly-btn jb-pink" style="width:100%;" onclick="randomCatStyle()">🎲 استایل شانسی برای کوچولوها!</button></div><div class="ctrl-grid" id="cg"></div>`;
+        box.innerHTML = html;
+        const cg = box.querySelector('#cg');
+        DRESSES.filter(d => cat.unlocked.includes(d.id)).forEach(d => {
+          const b = document.createElement('button');
+          b.className = 'item-btn' + (cat.dress===d.id?' sel':'');
+          b.innerHTML = `<span class="em">👗</span><span>${d.name}</span>`;
+          b.onclick = () => { cat.dress=d.id; YasCore.audio.sparkle(); saveCat(); renderRoomControls(); renderCatScene(); say('👗 وای این پیراهن چقدر بهم میاد!'); };
+          cg.appendChild(b);
+        });
+        [
+          { em:'👑', l:'تاج پرنسسی', fn:()=>{ cat.crown=cat.crown==='crown'?'none':'crown'; finishStyle(); } },
+          { em:'🎀', l:'پاپیون صورتی', fn:()=>{ cat.crown=cat.crown==='bow'?'none':'bow'; finishStyle(); } },
+          { em:'🌸', l:'گل یاس روی سر', fn:()=>{ cat.crown=cat.crown==='flower'?'none':'flower'; finishStyle(); } },
+          { em:'⭐', l:'ستاره‌های اکلیلی', fn:()=>{ cat.makeup=cat.makeup==='stars'?'':'stars'; finishStyle(); } },
+          { em:'💖', l:'قلب‌های بانمک', fn:()=>{ cat.makeup=cat.makeup==='hearts'?'':'hearts'; finishStyle(); } },
+          { em:'🧴', l:'عطر یاس اکلیلی', fn:()=>{ cat.fun=clamp(cat.fun+12); saveCat(); YasCore.audio.blessing(); YasCore.burst(window.innerWidth*0.4,window.innerHeight*0.4,28,['🌸','✨']); say('🌸 به به چه بوی گل یاسی!'); } }
+        ].forEach(it => {
+          const b = document.createElement('button'); b.className='item-btn';
+          b.innerHTML = `<span class="em">${it.em}</span><span>${it.l}</span>`;
+          b.onclick = it.fn; cg.appendChild(b);
+        });
+      } else if (cat.room === 'sport') {
+        title.textContent = '🤸 پارک، طناب‌بازی و ورزش شاد';
+        const sp = [
+          { em:'🪢', l:'پرش با طناب!', fn:() => {
+            cat.jumping=true; cat.jumps++; cat.fun=clamp(cat.fun+12); cat.sleep=clamp(cat.sleep-4);
+            YasCore.audio.note(520 + (cat.jumps%5)*80, 0.14, 'triangle', 0.16); YasCore.haptic(20);
+            saveCat(); renderCatScene();
+            if (cat.jumps % 5 === 0) { YasCore.addReward(4, 1, '🏆 ۵ پرش عالی! +۴ ستاره و +۱ غنچه یاس'); YasCore.audio.fanfare(); }
+            say(`🤸 هورا! پرش شماره ${cat.jumps}! ورزش خیلی خوبه!`);
+            setTimeout(()=>{ cat.jumping=false; renderCatScene(); }, 900);
+          }},
+          { em:'⚽', l:'توپ‌بازی رنگی', fn:() => { cat.fun=clamp(cat.fun+15); saveCat(); YasCore.audio.bubble(); YasCore.burst(window.innerWidth*0.4,window.innerHeight*0.4,24,['⚽','⭐']); say('⚽ گلللل! چه توپ‌بازی باحالی!'); } },
+          { em:'🧘', l:'نرمش کششی', fn:() => { cat.fun=clamp(cat.fun+10); cat.sleep=clamp(cat.sleep+8); saveCat(); YasCore.audio.sparkle(); say('🌿 نفس عمیق و نرمش! سرحالِ سرحال شدم!'); } }
+        ];
+        box.innerHTML = `<div class="ctrl-grid" id="cg"></div>`;
+        sp.forEach(a => {
+          const b = document.createElement('button'); b.className='item-btn';
+          b.innerHTML = `<span class="em">${a.em}</span><span>${a.l}</span>`;
+          b.onclick = a.fn; box.querySelector('#cg').appendChild(b);
+        });
+      } else if (cat.room === 'sleep') {
+        title.textContent = '🌙 اتاق خواب، پتوی صورتی و لالایی';
+        box.innerHTML = `<div class="ctrl-grid">
+          <button class="item-btn" onclick="toggleLamp()"><span class="em">${cat.night?'☀️':'🌙'}</span><span>${cat.night?'روشن کردن چراغ':'خاموش کردن چراغ'}</span></button>
+          <button class="item-btn" onclick="playCatLullaby()"><span class="em">🎶</span><span>پخش لالایی آرام</span></button>
+        </div>`;
+      } else {
+        title.textContent = '🛍️ فروشگاه لباس‌های جدید و هدیه روزانه';
+        const today = new Date().toISOString().slice(0,10);
+        const canGift = cat.giftClaimed !== today;
+        box.innerHTML = `<div style="margin-bottom:10px;">
+          <button class="jelly-btn jb-gold" style="width:100%;" onclick="claimDailyGift()">${canGift ? '🎁 باز کردن جعبه هدیه رایگان امروز! (+۱۰ ستاره)' : '✅ هدیه امروز رو گرفتی! فردا دوباره بیا 🌸'}</button>
+        </div><div class="ctrl-grid" id="cg"></div>`;
+        const cg = box.querySelector('#cg');
+        DRESSES.filter(d => d.price > 0).forEach(d => {
+          const owned = cat.unlocked.includes(d.id);
+          const b = document.createElement('button'); b.className='item-btn';
+          b.innerHTML = `<span class="em">👗</span><span>${d.name}</span><span style="font-size:11px;color:${owned?'#059669':'#d97706'};">${owned ? '✅ خریداری‌شده' : `⭐ ${d.price} ستاره`}</span>`;
+          b.onclick = () => buyDress(d);
+          cg.appendChild(b);
+        });
+      }
+    }
+
+    function feed(name, amt, isSoup = false) {
+      cat.food = clamp(cat.food + amt);
+      cat.fun = clamp(cat.fun + 5);
+      saveCat();
+      YasCore.audio.bubble(); YasCore.haptic(18);
+      YasCore.burst(window.innerWidth*0.4, window.innerHeight*0.4, 24, ['💖','✨', isSoup?'🍲':'🍔']);
+      if (cat.food >= 95) {
+        const bonus = cat.bismillah ? 4 : 2;
+        YasCore.addReward(bonus, 1, `🌸 الحمدلله سیر شد! +${bonus} ستاره و +۱ غنچه یاس`);
+        say(`😋 به به! ${name} عالی بود! الحمدلله رب العالمین! 🌸`);
+      } else {
+        say(`😋 یام‌یام! ${name} خیلی خوشمزه‌ست!`);
+      }
+    }
+
+    function finishStyle() {
+      cat.fun = clamp(cat.fun + 8); saveCat();
+      YasCore.audio.sparkle(); renderCatScene();
+      say('✨ چقدر ناز و مرتب شدم! مرسی دوست مهربونم!');
+    }
+    function randomCatStyle() {
+      const avail = DRESSES.filter(d => cat.unlocked.includes(d.id));
+      cat.dress = avail[Math.floor(Math.random()*avail.length)].id;
+      cat.crown = ['crown','bow','flower','none'][Math.floor(Math.random()*4)];
+      cat.makeup = ['stars','hearts','blush',''][Math.floor(Math.random()*4)];
+      finishStyle(); renderRoomControls();
+    }
+    function toggleLamp() {
+      cat.night = !cat.night;
+      if (cat.night) {
+        cat.sleep = 100; saveCat();
+        YasCore.audio.lullaby();
+        YasCore.addReward(3, 1, '🌙 شب بخیر پیشی! +۳ ستاره و +۱ غنچه یاس');
+        say('💤 شبت بخیر عزیزم... خواب‌های قشنگ ببینم...');
+      } else {
+        YasCore.audio.sparkle();
+        say('☀️ صبح بخیر! انرژی‌م پرِ پر شد! بریم بازی!');
+      }
+      renderRoomControls(); renderCatScene();
+    }
+    function playCatLullaby() {
+      cat.night = true; cat.sleep = 100; saveCat();
+      YasCore.audio.lullaby(); renderRoomControls(); renderCatScene();
+      say('🎶 لالاییِ آرام... پیشی کوچولو خوابش برد 💤');
+    }
+    function claimDailyGift() {
+      const today = new Date().toISOString().slice(0,10);
+      if (cat.giftClaimed === today) { YasCore.showToast('هدیه امروز رو گرفتی! 🌸'); return; }
+      cat.giftClaimed = today; saveCat();
+      YasCore.addReward(10, 3, '🎁 هورا! ۱۰ ستاره و ۳ غنچه یاس هدیه گرفتی!');
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 60, ['🎁','⭐','🌸']);
+      renderRoomControls();
+    }
+    function buyDress(d) {
+      if (cat.unlocked.includes(d.id)) {
+        cat.dress = d.id; saveCat(); renderCatScene(); say(`👗 ${d.name} رو پوشیدم!`); return;
+      }
+      const p = YasCore.getProgress();
+      if (p.stars < d.price) { YasCore.showToast(`برای خرید به ${d.price} ستاره نیاز داری ⭐`); return; }
+      YasCore.setProgress({ stars: p.stars - d.price, buds: p.buds });
+      cat.unlocked.push(d.id); cat.dress = d.id; saveCat();
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 50, ['👗','✨','🌸']);
+      say(`🎉 مبارکه! ${d.name} رو خریدیم و پوشیدم!`);
+      renderRoomControls(); renderCatScene();
+    }
+    function saveCatPhoto() {
+      const svgStr = new XMLSerializer().serializeToString(document.getElementById('catRoomSvg'));
+      const url = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width=840; c.height=660;
+        const x = c.getContext('2d');
+        x.fillStyle='#fdf2f8'; x.fillRect(0,0,840,660);
+        x.fillStyle='#db2777'; x.font='bold 28px Tahoma,sans-serif'; x.textAlign='center';
+        x.fillText(`🐱 ${cat.name} • شهر بازی یاس و رنگ 🌸`, 420, 46);
+        x.drawImage(img, 20, 62, 800, 575);
+        URL.revokeObjectURL(url);
+        YasCore.saveImage(c.toDataURL('image/png'), 'gorbe-yas.png');
+      };
+      img.src = url;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadCat(); updateMeters(); renderRoomControls(); renderCatScene();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>شهرِ بازی یاس و رنگ</title>
+  <link rel="stylesheet" href="shared/yas-theme.css" />
+  <style>
+    .lobby-wrap {
+      position: relative;
+      z-index: 2;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 12px 14px 36px;
+    }
+
+    .bismillah-ribbon {
+      text-align: center;
+      max-width: 490px;
+      margin: 0 auto 12px;
+      padding: 7px 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #fef3c7, #fce7f3, #e0f2fe);
+      border: 2px solid #fde047;
+      color: #92400e;
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.18);
+    }
+
+    /* Animated Sky Hero Banner */
+    .hero-banner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      padding: 20px 20px 18px;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 58%, #38bdf8 100%);
+      color: #fff;
+      box-shadow: 0 18px 36px rgba(124, 58, 237, 0.25);
+      margin-bottom: 16px;
+    }
+    .hero-banner::after {
+      content: "";
+      position: absolute;
+      top: -40%;
+      left: -10%;
+      width: 120%;
+      height: 75%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.28), transparent 70%);
+      pointer-events: none;
+    }
+    .hero-top {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-emblem {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.24);
+      border: 2.5px solid rgba(255, 255, 255, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+      animation: bobFloat 3.2s ease-in-out infinite;
+    }
+    @keyframes bobFloat {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-6px) rotate(3deg); }
+    }
+    .hero-h1 { margin: 0; font-size: 22px; font-weight: 900; text-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+    .hero-sub { margin: 3px 0 0; font-size: 13px; font-weight: 700; opacity: 0.96; }
+    .names-pill {
+      display: none;
+      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .hero-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .hero-icon-btn {
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+      border-radius: 15px;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Interactive Living Jasmine Garden Bar */
+    .garden-strip {
+      margin-bottom: 18px;
+      padding: 13px 15px;
+      border-color: #86efac;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(236,253,245,0.94));
+    }
+    .garden-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-weight: 900;
+      font-size: 13.5px;
+      color: #065f46;
+      margin-bottom: 8px;
+    }
+    .garden-mini-meadow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 54px;
+      border-radius: 18px;
+      padding: 8px 10px;
+      background: linear-gradient(180deg, #dbeafe 0%, #bbf7d0 62%, #86efac 100%);
+      border: 2px solid #86efac;
+    }
+
+    /* 5 Rich Illustrated Game Cards */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+      gap: 16px;
+    }
+
+    .game-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.94);
+      border-radius: 28px;
+      padding: 16px;
+      border: 3px solid #fff;
+      box-shadow: 0 14px 28px rgba(76, 29, 149, 0.11);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.22s var(--spring), box-shadow 0.22s ease;
+      overflow: hidden;
+    }
+    .game-card:hover { transform: translateY(-6px); box-shadow: 0 20px 36px rgba(124, 58, 237, 0.18); }
+    .game-card:active { transform: scale(0.97); }
+
+    .card-art {
+      height: 118px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.08);
+    }
+    .card-art svg { width: 100%; height: 100%; display: block; }
+    .stage-pill {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #4c1d95;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 10px;
+      border-radius: 999px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+    }
+    .card-title { font-size: 17px; font-weight: 900; margin: 2px 0 3px; color: #2c1d45; }
+    .card-desc { font-size: 12.5px; font-weight: 700; color: #64748b; margin: 0; line-height: 1.55; }
+
+    .set-input {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: 13px;
+      border: 2px solid #cbd5e1;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 11px;
+      border-radius: 13px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <div class="lobby-wrap">
+    <div id="bismillahBar" class="bismillah-ribbon">✨ بسم‌الله الرحمن الرحیم • بازی با شادی، هنر و مهربانی فاطمی 🌸</div>
+
+    <header class="hero-banner">
+      <div class="hero-top">
+        <div class="hero-title-row">
+          <div class="hero-emblem">🌸</div>
+          <div>
+            <h1 class="hero-h1">شهرِ بازی یاس و رنگ</h1>
+            <p class="hero-sub">۵ دنیای شاد و رنگارنگ برای خواهرهای هنرمند ✨</p>
+            <div id="namesBadge" class="names-pill"></div>
+          </div>
+        </div>
+
+        <div class="hero-controls">
+          <span class="stat-chip stars" onclick="YasCore.openGarden()"><span>⭐</span><span data-stars>0</span></span>
+          <span class="stat-chip buds" onclick="YasCore.openGarden()"><span>🌸</span><span data-buds>0</span></span>
+          <button data-sound-btn class="hero-icon-btn" onclick="YasCore.audio.toggle()">🔊</button>
+          <button class="hero-icon-btn" onclick="openSettings()">⚙️ تنظیمات</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- باغ یاس زنده -->
+    <section class="glass-card garden-strip">
+      <div class="garden-head">
+        <span>🌿 باغِ یاسِ مشترک ما (روی گل‌ها بزن تا آواز بخونن!)</span>
+        <span id="restBadge" style="font-size:12px;color:#059669;"></span>
+      </div>
+      <div id="meadowPlot" class="garden-mini-meadow"></div>
+    </section>
+
+    <!-- شبکه ۵ بازی ارتقاءیافته -->
+    <section id="gamesGrid" class="games-grid"></section>
+  </div>
+
+  <!-- پنجره تنظیمات والدین -->
+  <div id="settingsModal" class="yas-modal-bg" onclick="if(event.target===this) closeSettings()">
+    <div class="yas-modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="margin:0;color:#6d28d9;font-weight:900;">⚙️ تنظیمات و شخصی‌سازی</h3>
+        <button class="soft-btn" onclick="closeSettings()">✖️</button>
+      </div>
+
+      <div id="gateBox" style="text-align:center;padding:10px 0;">
+        <p style="font-weight:800;color:#475569;margin-top:0;">🔒 قفل والدین: حاصل این جمع را بنویسید:</p>
+        <div id="mathQ" style="font-size:26px;font-weight:900;color:#7c3aed;margin:8px 0;"></div>
+        <input id="mathAns" type="number" class="set-input" style="max-width:140px;text-align:center;font-size:18px;" />
+        <div><button class="jelly-btn jb-purple" onclick="verifyGate()">ورود به تنظیمات</button></div>
+      </div>
+
+      <div id="settingsBody" style="display:none;">
+        <label style="font-size:12px;font-weight:800;">پوسته رنگی شهر بازی:</label>
+        <select id="setTheme" class="set-input" onchange="savePrefs()">
+          <option value="pink">🌸 صورتی یاسی و آب‌نباتی</option>
+          <option value="cyan">💎 فیروزه‌ای و طلایی</option>
+          <option value="rainbow">🌈 رنگین‌کمان پرانرژی</option>
+          <option value="purple">🔮 بنفش رؤیایی</option>
+        </select>
+
+        <label style="font-size:12px;font-weight:800;">نام دخترها (نمایش در خوشامدگویی):</label>
+        <input id="setNames" class="set-input" oninput="savePrefs()" placeholder="مثلاً: فاطمه، ریحانه، حوریه" />
+
+        <label style="font-size:12px;font-weight:800;">تایمر مهربان استراحت چشم:</label>
+        <select id="setRest" class="set-input" onchange="savePrefs()">
+          <option value="0">خاموش (آزاد)</option>
+          <option value="15">هر ۱۵ دقیقه</option>
+          <option value="20">هر ۲۰ دقیقه</option>
+          <option value="30">هر ۳۰ دقیقه</option>
+          <option value="45">هر ۴۵ دقیقه</option>
+        </select>
+
+        <label style="font-size:12px;font-weight:800;display:block;margin-bottom:6px;">نمایش مراحل:</label>
+        <div id="togglesBox"></div>
+
+        <div style="display:flex;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap;">
+          <button class="soft-btn" style="color:#be123c;border-color:#fecdd3;background:#fff1f2;" onclick="resetProgress()">🗑️ صفر کردن امتیازها</button>
+          <button class="jelly-btn jb-emerald" onclick="closeSettings()">✅ ذخیره و بستن</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- پنجره استراحت مهربان چشم -->
+  <div id="restModal" class="yas-modal-bg">
+    <div class="yas-modal-card" style="text-align:center;border-color:#34d399;">
+      <div style="font-size:54px;">👀🌸💧</div>
+      <h2 style="color:#065f46;margin:6px 0;">وقت استراحت چشم‌های قشنگت!</h2>
+      <p style="font-size:13.5px;font-weight:700;color:#475569;line-height:1.7;">
+        آفرین دختر هنرمند! ۱۰ ثانیه به دوردست نگاه کن، پلک بزن، یه کم آب بخور و بعد دوباره برگرد به بازی!
+      </p>
+      <div id="restCount" style="font-size:20px;font-weight:900;color:#059669;margin:10px 0;"></div>
+      <button id="restDoneBtn" class="jelly-btn jb-emerald" style="width:100%;" onclick="closeRest()">✨ استراحت کردم، بریم بازی!</button>
+    </div>
+  </div>
+
+  <script src="shared/yas-core.js"></script>
+  <script>
+    const GAMES = [
+      {
+        id: 'stage1',
+        num: 1,
+        url: 'games/stage1.html',
+        title: 'کارگاه قاب گوشی و ناخونی',
+        desc: 'تزیین قاب گوشی با ۸ رنگ و اکلیل + لاک رنگین‌کمانی و نقش حنای دخترانه',
+        btnClass: 'jb-pink',
+        grad: 'linear-gradient(135deg,#fce7f3,#fbcfe8,#e0f2fe)',
+        art: `<svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="46" cy="28" r="24" fill="#fff" opacity="0.45"/>
+          <circle cx="236" cy="95" r="32" fill="#f9a8d4" opacity="0.35"/>
+          <rect x="64" y="14" width="58" height="94" rx="14" fill="#22c55e" stroke="#3b2d4a" stroke-width="4"/>
+          <rect x="72" y="22" width="22" height="28" rx="6" fill="#fff" opacity="0.92"/>
+          <circle cx="79" cy="30" r="3.5" fill="#1e293b"/><circle cx="79" cy="42" r="3.5" fill="#1e293b"/><circle cx="88" cy="42" r="3.5" fill="#1e293b"/>
+          <text x="95" y="76" font-size="22" text-anchor="middle">💖</text>
+          <text x="82" y="96" font-size="15" text-anchor="middle">⭐</text>
+          <g transform="translate(150,16)">
+            <path d="M22,94 L22,62 C12,56 4,46 8,36 C12,28 20,38 24,44 L24,20 C24,10 38,10 38,20 L38,44 L42,14 C42,4 56,4 56,14 L56,44 L60,18 C60,8 74,8 74,18 L72,48 L78,30 C82,22 92,26 88,36 L78,66 L72,94 Z" fill="#fde2cf" stroke="#d49e82" stroke-width="2.5"/>
+            <rect x="26" y="14" width="10" height="12" rx="5" fill="#ef4444"/>
+            <rect x="44" y="8" width="10" height="12" rx="5" fill="#ff4fa3"/>
+            <rect x="62" y="12" width="10" height="12" rx="5" fill="#facc15"/>
+            <circle cx="81" cy="30" r="4.5" fill="#38bdf8"/>
+            <circle cx="13" cy="41" r="4.5" fill="#a855f7"/>
+          </g>
+        </svg>`
+      },
+      {
+        id: 'stage2',
+        num: 2,
+        url: 'games/stage2.html',
+        title: 'آشپزخانه‌ی بفرمایید!',
+        desc: 'آشپزی با بسم‌الله نورانی، ماهی طلایی، سوپ مهربانی و مهمان‌نوازی فاطمی',
+        btnClass: 'jb-gold',
+        grad: 'linear-gradient(135deg,#fef3c7,#ffedd5,#e0f2fe)',
+        art: `<svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="194" y="14" width="60" height="46" rx="8" fill="#7dd3fc" stroke="#0284c7" stroke-width="3"/>
+          <line x1="224" y1="14" x2="224" y2="60" stroke="#0284c7" stroke-width="2.5"/>
+          <line x1="194" y1="37" x2="254" y2="37" stroke="#0284c7" stroke-width="2.5"/>
+          <rect x="20" y="76" width="240" height="32" rx="10" fill="#fef08a" stroke="#f59e0b" stroke-width="3"/>
+          <ellipse cx="78" cy="92" rx="26" ry="10" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/>
+          <polygon points="52,92 40,84 40,100" fill="#0ea5e9"/>
+          <circle cx="92" cy="90" r="2.5" fill="#0f172a"/>
+          <ellipse cx="164" cy="92" rx="28" ry="10" fill="#fb923c" stroke="#c2410c" stroke-width="2"/>
+          <circle cx="135" cy="42" r="20" fill="#fde2cf" stroke="#d49e82" stroke-width="2.5"/>
+          <path d="M115,40 Q135,14 155,40" fill="#451a03"/>
+          <circle cx="129" cy="42" r="2.3" fill="#1e293b"/><circle cx="141" cy="42" r="2.3" fill="#1e293b"/>
+          <path d="M130,50 Q135,55 140,50" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round"/>
+          <path d="M118,62 L152,62 L158,76 L112,76 Z" fill="#10b981"/>
+          <rect x="26" y="18" width="84" height="30" rx="14" fill="#fff" stroke="#f59e0b" stroke-width="2"/>
+          <text x="68" y="38" text-anchor="middle" font-size="13" font-weight="900" fill="#b45309">بفرمایید! ✨</text>
+        </svg>`
+      },
+      {
+        id: 'stage3',
+        num: 3,
+        url: 'games/stage3.html',
+        title: 'مزرعه‌ی ۴ گوشه (چندنفره)',
+        desc: 'بازی هم‌زمان خواهرها با ۴ گوشه‌ی رنگی، حیوانات بامزه و آهوی مهربانی',
+        btnClass: 'jb-emerald',
+        grad: 'linear-gradient(135deg,#dcfce7,#bbf7d0,#fef9c3)',
+        art: `<svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14,14 L14,44 M14,14 L54,14" stroke="#facc15" stroke-width="9" stroke-linecap="round"/>
+          <path d="M266,14 L266,44 M266,14 L226,14" stroke="#06b6d4" stroke-width="9" stroke-linecap="round"/>
+          <path d="M14,106 L14,76 M14,106 L54,106" stroke="#16a34a" stroke-width="9" stroke-linecap="round"/>
+          <path d="M266,106 L266,76 M266,106 L226,106" stroke="#ef4444" stroke-width="9" stroke-linecap="round"/>
+          <ellipse cx="140" cy="60" rx="34" ry="20" fill="#7dd3fc" stroke="#38bdf8" stroke-width="3"/>
+          <text x="92" y="54" font-size="30">🐑</text>
+          <text x="166" y="54" font-size="28">🐇</text>
+          <text x="128" y="96" font-size="26">🦌</text>
+          <text x="140" y="34" font-size="16" text-anchor="middle">✨💧✨</text>
+        </svg>`
+      },
+      {
+        id: 'stage4',
+        num: 4,
+        url: 'games/stage4.html',
+        title: 'بوم رنگ‌آمیزی و عروسکِ یاس',
+        desc: 'رنگ‌آمیزی جادویی اکلیلی (مسجد، باغ یاس، فانوس) + لباس‌تنی عروسک با چادر جشن تکلیف',
+        btnClass: 'jb-purple',
+        grad: 'linear-gradient(135deg,#ede9fe,#fce7f3,#e0f2fe)',
+        art: `<svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">
+          <rect x="24" y="16" width="106" height="88" rx="14" fill="#fff" stroke="#a855f7" stroke-width="3"/>
+          <path d="M52,82 Q77,32 102,82 Z" fill="#22d3ee" stroke="#0284c7" stroke-width="2.5"/>
+          <rect x="44" y="82" width="66" height="16" rx="4" fill="#fde047"/>
+          <text x="77" y="42" text-anchor="middle" font-size="14">🌙</text>
+          <g transform="translate(178,12)">
+            <circle cx="32" cy="28" r="18" fill="#fde2cf" stroke="#d49e82" stroke-width="2"/>
+            <path d="M12,30 Q32,4 52,30 L58,96 L6,96 Z" fill="#f9a8d4" stroke="#ec4899" stroke-width="2.5" opacity="0.92"/>
+            <circle cx="32" cy="28" r="14" fill="#fde2cf"/>
+            <circle cx="27" cy="27" r="2" fill="#1e293b"/><circle cx="37" cy="27" r="2" fill="#1e293b"/>
+            <path d="M28,34 Q32,38 36,34" fill="none" stroke="#e11d48" stroke-width="2"/>
+            <text x="32" y="14" text-anchor="middle" font-size="14">👑</text>
+          </g>
+        </svg>`
+      },
+      {
+        id: 'stage5',
+        num: 5,
+        url: 'games/stage5.html',
+        title: 'گربه‌ی کوچولوی یاس',
+        desc: 'مراقبت از پیشی ناز در ۶ اتاق: غذا و برگر، حمام حبابی، آراستگی، ورزش، لالایی و خرید',
+        btnClass: 'jb-cyan',
+        grad: 'linear-gradient(135deg,#cffafe,#fce7f3,#fef3c7)',
+        art: `<svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(106,8)">
+            <polygon points="16,32 22,8 36,24" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>
+            <polygon points="52,32 46,8 32,24" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>
+            <polygon points="19,28 23,14 31,23" fill="#fbcfe8"/>
+            <polygon points="49,28 45,14 37,23" fill="#fbcfe8"/>
+            <ellipse cx="34" cy="36" rx="22" ry="18" fill="#fff" stroke="#cbd5e1" stroke-width="2.5"/>
+            <circle cx="26" cy="34" r="3" fill="#1e293b"/><circle cx="42" cy="34" r="3" fill="#1e293b"/>
+            <circle cx="25" cy="33" r="1" fill="#fff"/><circle cx="41" cy="33" r="1" fill="#fff"/>
+            <polygon points="34,40 31,37 37,37" fill="#fb7185"/>
+            <path d="M16,54 L52,54 L68,104 L0,104 Z" fill="#ff5ea8" stroke="#db2777" stroke-width="2.5"/>
+            <text x="34" y="84" text-anchor="middle" font-size="18">⭐</text>
+          </g>
+          <text x="34" y="48" font-size="24">🍔</text>
+          <text x="40" y="96" font-size="24">🛁</text>
+          <text x="226" y="48" font-size="24">💄</text>
+          <text x="222" y="96" font-size="24">🌙</text>
+        </svg>`
+      }
+    ];
+
+    let prefs = { theme: 'pink', names: '', restMinutes: 20, hidden: [] };
+    let expectedAns = 0;
+    let restTimer = null, restSecs = 0;
+
+    function loadPrefs() {
+      try {
+        const s = JSON.parse(localStorage.getItem(YasCore.PREF_KEY) || 'null');
+        if (s) prefs = Object.assign(prefs, s);
+      } catch (e) {}
+      document.body.className = 'theme-' + (prefs.theme || 'pink');
+      const nb = document.getElementById('namesBadge');
+      if (prefs.names && prefs.names.trim()) {
+        nb.style.display = 'inline-block';
+        nb.textContent = '💖 خوش آمدید: ' + prefs.names.trim();
+      } else {
+        nb.style.display = 'none';
+      }
+    }
+
+    function renderMeadow() {
+      const p = YasCore.getProgress();
+      const box = document.getElementById('meadowPlot');
+      box.innerHTML = '';
+      const count = Math.max(6, Math.min(26, p.buds + 5));
+      const icons = ['🌸', '🌼', '🌷', '🌺', '🦋', '✨', '🌹'];
+      const notes = [523, 587, 659, 784, 880, 1046];
+      for (let i = 0; i < count; i++) {
+        const sp = document.createElement('span');
+        sp.className = 'yas-flower-item';
+        sp.style.fontSize = '27px';
+        sp.textContent = icons[i % icons.length];
+        sp.onclick = (e) => {
+          YasCore.audio.note(notes[i % notes.length], 0.2, 'sine', 0.15);
+          YasCore.haptic(15);
+          YasCore.burst(e.clientX, e.clientY, 12, ['🌸', '✨']);
+        };
+        box.appendChild(sp);
+      }
+    }
+
+    function renderGames() {
+      const grid = document.getElementById('gamesGrid');
+      grid.innerHTML = '';
+      GAMES.forEach(g => {
+        if ((prefs.hidden || []).includes(g.id)) return;
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = () => {
+          YasCore.audio.sparkle();
+          YasCore.haptic(25);
+          setTimeout(() => { location.href = g.url; }, 110);
+        };
+        card.innerHTML = `
+          <div>
+            <div class="card-art" style="background:${g.grad};">
+              ${g.art}
+              <span class="stage-pill">مرحله ${g.num}</span>
+            </div>
+            <h3 class="card-title">${g.title}</h3>
+            <p class="card-desc">${g.desc}</p>
+          </div>
+          <div class="jelly-btn ${g.btnClass}" style="width:100%;">▶ شروع بازی</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function setupRestTimer() {
+      if (restTimer) clearInterval(restTimer);
+      const mins = Number(prefs.restMinutes) || 0;
+      const badge = document.getElementById('restBadge');
+      if (mins <= 0) { badge.textContent = ''; return; }
+      restSecs = mins * 60;
+      restTimer = setInterval(() => {
+        restSecs--;
+        const m = Math.floor(restSecs / 60);
+        const s = String(restSecs % 60).padStart(2, '0');
+        badge.textContent = `⏳ استراحت چشم: ${m}:${s}`;
+        if (restSecs <= 0) {
+          clearInterval(restTimer);
+          openRest();
+        }
+      }, 1000);
+    }
+
+    function openRest() {
+      YasCore.audio.blessing();
+      document.getElementById('restModal').classList.add('open');
+      let s = 10;
+      const btn = document.getElementById('restDoneBtn');
+      const cnt = document.getElementById('restCount');
+      btn.disabled = true; btn.style.opacity = '0.55';
+      cnt.textContent = `⏳ ${s} ثانیه به دوردست نگاه کن...`;
+      const iv = setInterval(() => {
+        s--;
+        if (s > 0) cnt.textContent = `⏳ ${s} ثانیه به دوردست نگاه کن...`;
+        else {
+          clearInterval(iv);
+          cnt.textContent = '🌟 آفرین! چشم‌هات سرحال شدن!';
+          btn.disabled = false; btn.style.opacity = '1';
+        }
+      }, 1000);
+    }
+
+    function closeRest() {
+      document.getElementById('restModal').classList.remove('open');
+      setupRestTimer();
+    }
+
+    function openSettings() {
+      YasCore.audio.pop();
+      const a = 3 + Math.floor(Math.random() * 6);
+      const b = 4 + Math.floor(Math.random() * 6);
+      expectedAns = a + b;
+      document.getElementById('mathQ').textContent = `${a} + ${b} = ؟`;
+      document.getElementById('mathAns').value = '';
+      document.getElementById('gateBox').style.display = 'block';
+      document.getElementById('settingsBody').style.display = 'none';
+      document.getElementById('settingsModal').classList.add('open');
+    }
+
+    function verifyGate() {
+      if (parseInt(document.getElementById('mathAns').value, 10) === expectedAns) {
+        document.getElementById('gateBox').style.display = 'none';
+        document.getElementById('settingsBody').style.display = 'block';
+        document.getElementById('setTheme').value = prefs.theme || 'pink';
+        document.getElementById('setNames').value = prefs.names || '';
+        document.getElementById('setRest').value = String(prefs.restMinutes || 0);
+        const tb = document.getElementById('togglesBox');
+        tb.innerHTML = '';
+        GAMES.forEach(g => {
+          const vis = !(prefs.hidden || []).includes(g.id);
+          const lbl = document.createElement('label');
+          lbl.className = 'toggle-row';
+          lbl.innerHTML = `<span>${g.title}</span><input type="checkbox" ${vis ? 'checked' : ''} onchange="toggleGame('${g.id}', this.checked)"/>`;
+          tb.appendChild(lbl);
+        });
+      } else {
+        YasCore.showToast('پاسخ درست نبود، دوباره امتحان کنید!');
+      }
+    }
+
+    function toggleGame(id, vis) {
+      prefs.hidden = prefs.hidden || [];
+      if (vis) prefs.hidden = prefs.hidden.filter(x => x !== id);
+      else if (!prefs.hidden.includes(id)) prefs.hidden.push(id);
+      savePrefs();
+    }
+
+    function savePrefs() {
+      prefs.theme = document.getElementById('setTheme').value;
+      prefs.names = document.getElementById('setNames').value;
+      prefs.restMinutes = parseInt(document.getElementById('setRest').value, 10) || 0;
+      try { localStorage.setItem(YasCore.PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
+      loadPrefs();
+      renderGames();
+      setupRestTimer();
+    }
+
+    function resetProgress() {
+      if (confirm('ستاره‌ها و غنچه‌های باغ یاس صفر شوند؟')) {
+        YasCore.setProgress({ stars: 0, buds: 0 });
+        renderMeadow();
+        YasCore.showToast('امتیازها بازنشانی شدند 🌸');
+      }
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('open');
+    }
+
+    window.onAndroidBack = function () {
+      const m = document.getElementById('settingsModal');
+      if (m.classList.contains('open')) { closeSettings(); return 'HANDLED'; }
+      const g = document.getElementById('yasGardenModal');
+      if (g && g.classList.contains('open')) { YasCore.closeGarden(); return 'HANDLED'; }
+      return 'EXIT';
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPrefs();
+      renderMeadow();
+      renderGames();
+      setupRestTimer();
+    });
+  </script>
+</body>
+</html>

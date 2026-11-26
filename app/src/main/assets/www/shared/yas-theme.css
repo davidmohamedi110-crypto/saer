@@ -1,0 +1,281 @@
+/* ============================================================================
+   شهرِ بازی یاس و رنگ • سیستم طراحی گرافیکی 2.5D آب‌نباتی-شیشه‌ای
+   ============================================================================ */
+:root {
+  --bg-grad: linear-gradient(145deg, #fff0f8 0%, #eaf8ff 48%, #f4eeff 100%);
+  --pink: #ff4fa3;
+  --pink-deep: #db2777;
+  --purple: #8b5cf6;
+  --purple-deep: #6d28d9;
+  --cyan: #06b6d4;
+  --cyan-deep: #0284c7;
+  --emerald: #10b981;
+  --emerald-deep: #047857;
+  --gold: #f59e0b;
+  --gold-deep: #b45309;
+  --ink: #2c1d45;
+  --muted: #64748b;
+  --glass: rgba(255, 255, 255, 0.88);
+  --glass-strong: rgba(255, 255, 255, 0.96);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.theme-cyan {
+  --bg-grad: linear-gradient(145deg, #ecfeff 0%, #fefce8 50%, #eef2ff 100%);
+  --pink: #06b6d4; --pink-deep: #0284c7;
+  --purple: #0ea5e9; --purple-deep: #1d4ed8;
+}
+body.theme-rainbow {
+  --bg-grad: linear-gradient(145deg, #fff1f2 0%, #fef9c3 34%, #dcfce7 68%, #e0f2fe 100%);
+  --pink: #f43f5e; --pink-deep: #be123c;
+  --purple: #10b981; --purple-deep: #047857;
+}
+body.theme-purple {
+  --bg-grad: linear-gradient(145deg, #f5f3ff 0%, #fdf2f8 50%, #ede9fe 100%);
+  --pink: #a855f7; --pink-deep: #7e22ce;
+  --purple: #ec4899; --purple-deep: #be185d;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: 'Vazirmatn', 'IRANSans', 'Noto Sans Arabic', Tahoma, sans-serif;
+  background: var(--bg-grad);
+  background-attachment: fixed;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* Soft ambient floating bokeh background layer */
+.yas-bg-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.yas-bg-orbs span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(36px);
+  opacity: 0.42;
+  animation: yasDrift 14s ease-in-out infinite alternate;
+}
+.yas-bg-orbs span:nth-child(1) { width: 240px; height: 240px; background: #f9a8d4; top: -60px; right: -40px; }
+.yas-bg-orbs span:nth-child(2) { width: 260px; height: 260px; background: #93c5fd; bottom: -70px; left: -50px; animation-delay: -5s; }
+.yas-bg-orbs span:nth-child(3) { width: 190px; height: 190px; background: #fde68a; top: 42%; left: 55%; animation-delay: -9s; }
+
+@keyframes yasDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(24px, -22px) scale(1.12); }
+}
+
+#yasFxCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Glossy 3D Sticky Header */
+.yas-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 3px solid rgba(244, 114, 182, 0.35);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.12);
+  padding: 9px 12px;
+}
+
+.yas-header-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* 3D Glossy Jelly Buttons */
+.jelly-btn {
+  position: relative;
+  border: none;
+  border-radius: 18px;
+  padding: 11px 16px;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 13.5px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  transition: transform 0.16s var(--spring), box-shadow 0.16s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.jelly-btn::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 8%;
+  width: 84%;
+  height: 44%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.04));
+  pointer-events: none;
+}
+.jelly-btn:active { transform: translateY(4px) scale(0.97); }
+
+.jb-pink { background: linear-gradient(180deg, #ff74bc, #e11d74); box-shadow: 0 5px 0 #9d174d, 0 10px 20px rgba(225, 29, 116, 0.28); }
+.jb-pink:active { box-shadow: 0 1px 0 #9d174d; }
+.jb-purple { background: linear-gradient(180deg, #b388ff, #7c3aed); box-shadow: 0 5px 0 #5b21b6, 0 10px 20px rgba(124, 58, 237, 0.28); }
+.jb-purple:active { box-shadow: 0 1px 0 #5b21b6; }
+.jb-cyan { background: linear-gradient(180deg, #38e1f5, #0284c7); box-shadow: 0 5px 0 #075985, 0 10px 20px rgba(2, 132, 199, 0.26); }
+.jb-cyan:active { box-shadow: 0 1px 0 #075985; }
+.jb-gold { background: linear-gradient(180deg, #fcd34d, #d97706); box-shadow: 0 5px 0 #92400e, 0 10px 20px rgba(217, 119, 6, 0.28); }
+.jb-gold:active { box-shadow: 0 1px 0 #92400e; }
+.jb-emerald { background: linear-gradient(180deg, #34d399, #059669); box-shadow: 0 5px 0 #065f46, 0 10px 20px rgba(5, 150, 105, 0.26); }
+.jb-emerald:active { box-shadow: 0 1px 0 #065f46; }
+.jb-coral { background: linear-gradient(180deg, #fb7185, #e11d48); box-shadow: 0 5px 0 #9f1239, 0 10px 20px rgba(225, 29, 72, 0.26); }
+.jb-coral:active { box-shadow: 0 1px 0 #9f1239; }
+
+.soft-btn {
+  border: 2px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.92);
+  color: #334155;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: transform 0.14s var(--spring), background 0.15s;
+}
+.soft-btn:active { transform: scale(0.95); }
+
+/* Glass Cards */
+.glass-card {
+  position: relative;
+  z-index: 2;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 2.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+  padding: 16px;
+  box-shadow: 0 14px 34px rgba(109, 40, 217, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 13px;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+.stat-chip.stars { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+.stat-chip.buds { background: linear-gradient(135deg, #fce7f3, #fbcfe8); color: #9d174d; }
+
+/* Modal */
+.yas-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 18, 52, 0.56);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+  padding: 14px;
+}
+.yas-modal-bg.open { display: flex; }
+.yas-modal-card {
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  border: 3px solid #e9d5ff;
+  border-radius: 28px;
+  max-width: 540px;
+  width: 100%;
+  padding: 18px;
+  box-shadow: 0 24px 60px rgba(28, 18, 52, 0.32);
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: yasPopIn 0.28s var(--spring);
+}
+@keyframes yasPopIn {
+  from { opacity: 0; transform: scale(0.86) translateY(14px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Garden Plot */
+.yas-garden-plot {
+  min-height: 150px;
+  background: linear-gradient(180deg, #bae6fd 0%, #dcfce7 52%, #86efac 100%);
+  border: 2.5px solid #4ade80;
+  border-radius: 22px;
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 12px 0;
+  position: relative;
+  overflow: hidden;
+}
+.yas-flower-item {
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.2s var(--spring);
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.14));
+}
+.yas-flower-item:hover, .yas-flower-item:active {
+  transform: scale(1.32) rotate(14deg);
+}
+
+/* Floating Praise Toast */
+.yas-toast {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%) translateY(90px);
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  color: #fff;
+  padding: 11px 20px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 13.5px;
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.38);
+  border: 2px solid #fef08a;
+  z-index: 9998;
+  opacity: 0;
+  transition: all 0.32s var(--spring);
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 92vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.yas-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

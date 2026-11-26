@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>مرحله ۴ • بوم رنگ‌آمیزی جادویی و عروسکِ یاس</title>
+  <link rel="stylesheet" href="../shared/yas-theme.css" />
+  <style>
+    .wrap { position:relative; z-index:2; max-width:1120px; margin:12px auto 28px; padding:0 12px; }
+    .tabs { display:flex; gap:6px; background:#f5f3ff; border:2px solid #ddd6fe; padding:4px; border-radius:18px; }
+    .tab-btn { border:none; background:transparent; color:#5b21b6; font-family:inherit; font-weight:900; font-size:13px; padding:7px 13px; border-radius:14px; cursor:pointer; }
+    .tab-btn.active { background:linear-gradient(180deg,#a78bfa,#7c3aed); color:#fff; box-shadow:0 4px 12px rgba(124,58,237,.32); }
+    .panel { display:none; }
+    .panel.active { display:block; animation:yasPopIn .25s ease; }
+
+    .grid { display:grid; grid-template-columns:1.15fr 1fr; gap:15px; align-items:start; }
+    @media (max-width:860px){ .grid { grid-template-columns:1fr; } }
+
+    .sec-t { font-weight:900; font-size:13.5px; color:#5b21b6; margin:0 0 7px; display:flex; justify-content:space-between; align-items:center; gap:6px; }
+    .box { background:rgba(255,255,255,.9); border:2px solid #ede9fe; border-radius:18px; padding:10px 12px; margin-bottom:10px; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .chip { border:2px solid #e9d5ff; background:#fff; color:#4c1d95; border-radius:12px; padding:6px 10px; font-family:inherit; font-weight:800; font-size:12px; cursor:pointer; }
+    .chip.sel { background:linear-gradient(180deg,#c084fc,#7c3aed); color:#fff; border-color:#6d28d9; }
+
+    .swatches { display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+    .sw { width:33px; height:33px; border-radius:50%; border:3px solid #fff; box-shadow:0 3px 8px rgba(0,0,0,.18); cursor:pointer; transition:transform .14s var(--spring); }
+    .sw.sel { transform:scale(1.16); outline:3px solid #7c3aed; outline-offset:2px; }
+
+    /* Coloring Canvas Stack */
+    .canvas-frame {
+      position:relative; width:100%; aspect-ratio:4/3; border-radius:22px; overflow:hidden;
+      background:#fff; border:3px solid #c4b5fd; box-shadow:0 12px 26px rgba(124,58,237,.14);
+      touch-action:none;
+    }
+    #colorSvg, #freeCanvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    #freeCanvas { z-index:4; touch-action:none; }
+    .paintable { cursor:pointer; transition:fill .18s ease; }
+    .paintable:hover { filter:brightness(0.96); }
+
+    /* Doll Stage */
+    .doll-stage {
+      border-radius:24px; overflow:hidden; border:3px solid #f9a8d4;
+      box-shadow:0 14px 28px rgba(236,72,153,.15);
+      background:#fdf2f8;
+    }
+    #dollSvg { width:100%; max-height:430px; display:block; margin:0 auto; }
+  </style>
+</head>
+<body>
+  <header class="yas-header">
+    <div class="yas-header-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="jelly-btn jb-purple" style="padding:8px 12px;font-size:12.5px;" onclick="location.href='../index.html'">🏠 منو</button>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#6d28d9;">🎨 رنگ‌آمیزی و عروسکِ یاس</div>
+          <div style="font-size:11px;font-weight:700;color:#8b5cf6;">مرحله ۴ • خلاقیت و پوشش شاد ✨</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button id="tbColor" class="tab-btn active" onclick="switchTab('color')">🎨 رنگ‌آمیزی جادویی</button>
+        <button id="tbDoll" class="tab-btn" onclick="switchTab('doll')">🎀 عروسکِ یاس</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="stat-chip stars" onclick="YasCore.openGarden()">⭐ <span data-stars>0</span></span>
+        <span class="stat-chip buds" onclick="YasCore.openGarden()">🌸 <span data-buds>0</span></span>
+        <button data-sound-btn class="soft-btn" style="padding:7px 10px;" onclick="YasCore.audio.toggle()">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- پنل ۱: بوم رنگ‌آمیزی جادویی -->
+    <section id="pColor" class="panel active">
+      <div class="grid">
+        <div class="glass-card">
+          <div class="sec-t">
+            <span>🖼️ بوم نقاشی و رنگ‌آمیزی من</span>
+            <div style="display:flex;gap:5px;">
+              <button class="soft-btn" style="padding:4px 9px;font-size:11.5px;" onclick="undoColor()">↩️ برگشت</button>
+              <button class="soft-btn" style="padding:4px 9px;font-size:11.5px;" onclick="resetColoring()">🧹 نو کردن</button>
+            </div>
+          </div>
+
+          <div class="canvas-frame">
+            <svg id="colorSvg" viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg"></svg>
+            <canvas id="freeCanvas" width="900" height="675"></canvas>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;">
+            <button class="jelly-btn jb-gold" onclick="rewardArt()">✨ نقاشیم تموم شد! (+جایزه)</button>
+            <button class="jelly-btn jb-cyan" onclick="saveArtPng()">📸 ذخیره در گالری</button>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="box">
+            <div class="sec-t"><span>📖 ۱. انتخاب طرح رنگ‌آمیزی</span></div>
+            <div id="sceneRow" class="chips"></div>
+          </div>
+          <div class="box">
+            <div class="sec-t"><span>🪄 ۲. ابزار جادویی (سطل رنگ برای ۴ ساله عالیه!)</span></div>
+            <div id="toolRow" class="chips"></div>
+          </div>
+          <div class="box">
+            <div class="sec-t">
+              <span>🎨 ۳. پالت ۱۵ رنگ شاد</span>
+              <button class="soft-btn" style="padding:4px 9px;font-size:11.5px;" onclick="randomPaintColor()">🎲 رنگ شانسی</button>
+            </div>
+            <div id="colorPalette" class="swatches"></div>
+          </div>
+          <div class="box" style="margin-bottom:0;">
+            <div class="sec-t"><span>⭐ ۴. مُهرهای چسباندنی روی نقاشی</span></div>
+            <div id="stampRow" class="chips"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- پنل ۲: کارگاه عروسکِ یاس -->
+    <section id="pDoll" class="panel">
+      <div class="grid">
+        <div class="glass-card">
+          <div class="sec-t">
+            <span>🎀 عروسکِ نازِ یاس</span>
+            <button class="soft-btn" style="padding:5px 10px;font-size:12px;" onclick="randomDoll()">🎲 لباس شانسی!</button>
+          </div>
+          <div class="doll-stage">
+            <svg id="dollSvg" viewBox="0 0 420 460" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;">
+            <button class="jelly-btn jb-pink" onclick="praiseDoll()">✨ عروسکم آماده شد! (+جایزه)</button>
+            <button class="jelly-btn jb-cyan" onclick="saveDollPng()">📸 ذخیره عکس عروسک</button>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="box">
+            <div class="sec-t"><span>🧕 ۱. پوشش سر و چادر جشن تکلیف</span></div>
+            <div id="dHeadRow" class="chips"></div>
+          </div>
+          <div class="box">
+            <div class="sec-t"><span>👗 ۲. لباس شاد و پوشیده</span></div>
+            <div id="dOutfitRow" class="chips"></div>
+          </div>
+          <div class="box">
+            <div class="sec-t"><span>👑 ۳. تاج، گردنبند و وسیله در دست</span></div>
+            <div id="dAccRow" class="chips" style="margin-bottom:7px;"></div>
+            <div id="dPropRow" class="chips"></div>
+          </div>
+          <div class="box" style="margin-bottom:0;">
+            <div class="sec-t"><span>🏞️ ۴. پس‌زمینه و چهره</span></div>
+            <div id="dBgRow" class="chips" style="margin-bottom:7px;"></div>
+            <div id="dFaceRow" class="chips"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../shared/yas-core.js"></script>
+  <script>
+    function switchTab(t) {
+      YasCore.audio.pop(); YasCore.haptic(15);
+      document.getElementById('pColor').classList.toggle('active', t==='color');
+      document.getElementById('pDoll').classList.toggle('active', t==='doll');
+      document.getElementById('tbColor').classList.toggle('active', t==='color');
+      document.getElementById('tbDoll').classList.toggle('active', t==='doll');
+    }
+
+    // ==================== COLORING STUDIO ====================
+    const SCENES = [
+      {
+        id:'mosque', label:'🕌 مسجد فیروزه‌ای',
+        svg:`<rect class="paintable" x="0" y="0" width="600" height="310" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <rect class="paintable" x="0" y="310" width="600" height="140" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <circle class="paintable" cx="515" cy="70" r="36" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <path class="paintable" d="M210,235 Q300,75 390,235 Z" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <rect class="paintable" x="125" y="135" width="42" height="175" rx="6" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <path class="paintable" d="M125,135 Q146,85 167,135 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <rect class="paintable" x="433" y="135" width="42" height="175" rx="6" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <path class="paintable" d="M433,135 Q454,85 475,135 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <rect class="paintable" x="175" y="235" width="250" height="115" rx="8" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <path class="paintable" d="M262,350 L262,285 Q300,248 338,285 L338,350 Z" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <circle class="paintable" cx="215" cy="290" r="20" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <circle class="paintable" cx="385" cy="290" r="20" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <ellipse class="paintable" cx="110" cy="390" rx="52" ry="26" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <ellipse class="paintable" cx="490" cy="390" rx="52" ry="26" fill="#ffffff" stroke="#334155" stroke-width="3"/>`
+      },
+      {
+        id:'garden', label:'🌸 باغ یاس و پروانه',
+        svg:`<rect class="paintable" x="0" y="0" width="600" height="295" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <rect class="paintable" x="0" y="295" width="600" height="155" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <circle class="paintable" cx="95" cy="76" r="38" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <path class="paintable" d="M292,380 L292,240 L308,240 L308,380 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="255" cy="315" rx="36" ry="18" transform="rotate(-24 255 315)" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="345" cy="315" rx="36" ry="18" transform="rotate(24 345 315)" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="300" cy="145" r="36" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="356" cy="184" r="36" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="334" cy="246" r="36" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="266" cy="246" r="36" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="244" cy="184" r="36" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="300" cy="200" r="28" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="465" cy="110" rx="38" ry="26" transform="rotate(-18 465 110)" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="530" cy="110" rx="38" ry="26" transform="rotate(18 530 110)" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="472" cy="148" rx="28" ry="20" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <ellipse class="paintable" cx="523" cy="148" rx="28" ry="20" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <rect class="paintable" x="492" y="92" width="12" height="72" rx="6" fill="#ffffff" stroke="#334155" stroke-width="3"/>`
+      },
+      {
+        id:'taklif', label:'👑 جشن تکلیف',
+        svg:`<rect class="paintable" x="0" y="0" width="600" height="450" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <path class="paintable" d="M180,420 L215,175 Q300,75 385,175 L420,420 Z" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <circle class="paintable" cx="300" cy="185" r="56" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <circle cx="282" cy="180" r="5" fill="#1e293b"/><circle cx="318" cy="180" r="5" fill="#1e293b"/>
+             <path d="M286,204 Q300,218 314,204" fill="none" stroke="#e11d48" stroke-width="4" stroke-linecap="round"/>
+             <polygon class="paintable" points="258,124 274,84 300,112 326,84 342,124" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="112" cy="130" r="42" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <circle class="paintable" cx="488" cy="130" r="42" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <path class="paintable" d="M250,310 C250,278 300,278 300,310 C300,278 350,278 350,310 C350,352 300,382 300,382 C300,382 250,352 250,310 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>`
+      },
+      {
+        id:'lantern', label:'🏮 فانوسِ عید',
+        svg:`<rect class="paintable" x="0" y="0" width="600" height="450" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+             <rect class="paintable" x="285" y="18" width="30" height="58" rx="10" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <path class="paintable" d="M225,135 Q300,52 375,135 Z" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <polygon class="paintable" points="212,135 388,135 365,335 235,335" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <path class="paintable" d="M262,320 L262,205 Q300,165 338,205 L338,320 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <rect class="paintable" x="218" y="335" width="164" height="36" rx="10" fill="#ffffff" stroke="#334155" stroke-width="4"/>
+             <path class="paintable" d="M120,108 A46,46 0 1,0 120,200 A34,34 0 1,1 120,108 Z" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>
+             <polygon class="paintable" points="485,100 499,134 536,134 506,156 518,192 485,170 452,192 464,156 434,134 471,134" fill="#ffffff" stroke="#334155" stroke-width="3.5"/>`
+      },
+      {
+        id:'blank', label:'⬜ بوم سفید آزاد',
+        svg:`<rect class="paintable" x="0" y="0" width="600" height="450" fill="#ffffff"/>`
+      }
+    ];
+
+    const TOOLS = [
+      { id:'bucket', l:'🪣 سطل رنگ (یک‌کلیک)' },
+      { id:'brush', l:'🖍️ قلم‌مو' },
+      { id:'glitter', l:'✨ قلم اکلیلی' },
+      { id:'rainbow', l:'🌈 رنگین‌کمان' },
+      { id:'eraser', l:'🧽 پاک‌کن' }
+    ];
+    const PALETTE = [
+      '#ff4fa3','#ef4444','#fb923c','#facc15','#a3e635','#22c55e','#14b8a6',
+      '#06b6d4','#38bdf8','#3b82f6','#8b5cf6','#d946ef','#f472b6','#92400e','#1e293b'
+    ];
+    const STAMPS = ['⭐','💖','🌸','🦋','🌙','👑','✨','یا زهرا 🌸','بسم‌الله ✨'];
+
+    let cs = { scene:'mosque', tool:'bucket', color:'#06b6d4', stamp:null, hue:0, svgHist:[], cHist:[] };
+    const cSvg = document.getElementById('colorSvg');
+    const fCan = document.getElementById('freeCanvas'), fCtx = fCan.getContext('2d');
+
+    function initColorUI() {
+      const sr = document.getElementById('sceneRow'); sr.innerHTML = '';
+      SCENES.forEach(s => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (cs.scene===s.id?' sel':''); b.textContent = s.label;
+        b.onclick = () => { cs.scene = s.id; if (s.id==='blank') cs.tool='brush'; YasCore.audio.pop(); loadScene(); initColorUI(); };
+        sr.appendChild(b);
+      });
+      const tr = document.getElementById('toolRow'); tr.innerHTML = '';
+      TOOLS.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (cs.tool===t.id && !cs.stamp?' sel':''); b.textContent = t.l;
+        b.onclick = () => { cs.tool = t.id; cs.stamp = null; updateCanvasPass(); YasCore.audio.pop(); initColorUI(); };
+        tr.appendChild(b);
+      });
+      const cp = document.getElementById('colorPalette'); cp.innerHTML = '';
+      PALETTE.forEach(col => {
+        const d = document.createElement('button');
+        d.className = 'sw' + (cs.color===col?' sel':''); d.style.background = col;
+        d.onclick = () => { cs.color = col; cs.stamp = null; YasCore.audio.pop(); initColorUI(); };
+        cp.appendChild(d);
+      });
+      const st = document.getElementById('stampRow'); st.innerHTML = '';
+      STAMPS.forEach(s => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (cs.stamp===s?' sel':''); b.textContent = s;
+        b.onclick = () => { cs.stamp = s; updateCanvasPass(); YasCore.audio.pop(); initColorUI(); YasCore.showToast('روی بوم بزن تا مُهر بخوره! ✨'); };
+        st.appendChild(b);
+      });
+    }
+
+    function updateCanvasPass() {
+      fCan.style.pointerEvents = (cs.tool === 'bucket' && !cs.stamp) ? 'none' : 'auto';
+    }
+
+    function loadScene() {
+      const sc = SCENES.find(x => x.id === cs.scene) || SCENES[0];
+      cSvg.innerHTML = sc.svg;
+      fCtx.clearRect(0, 0, fCan.width, fCan.height);
+      cs.svgHist = []; cs.cHist = [];
+      cSvg.querySelectorAll('.paintable').forEach(el => {
+        el.onclick = (e) => {
+          if (cs.tool !== 'bucket' || cs.stamp) return;
+          cs.svgHist.push({ el, prev: el.getAttribute('fill') });
+          el.setAttribute('fill', cs.color);
+          YasCore.audio.bubble(); YasCore.haptic(15);
+          YasCore.burst(e.clientX, e.clientY, 10, ['✨']);
+        };
+      });
+      updateCanvasPass();
+    }
+
+    function randomPaintColor() {
+      cs.color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      YasCore.audio.sparkle(); initColorUI();
+    }
+
+    let cDraw = false, cLast = null;
+    function getFreePt(e) {
+      const r = fCan.getBoundingClientRect();
+      return { x:(e.clientX-r.left)*(fCan.width/r.width), y:(e.clientY-r.top)*(fCan.height/r.height) };
+    }
+    fCan.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (cs.cHist.length > 14) cs.cHist.shift();
+      cs.cHist.push(fCtx.getImageData(0,0,fCan.width,fCan.height));
+      const p = getFreePt(e);
+      if (cs.stamp) {
+        fCtx.save();
+        if (cs.stamp.length > 3) {
+          fCtx.font = 'bold 28px Tahoma,sans-serif';
+          const tw = fCtx.measureText(cs.stamp).width + 32;
+          fCtx.fillStyle = '#ec4899'; YasCore.drawRoundRect(fCtx, p.x-tw/2, p.y-24, tw, 48, 24); fCtx.fill();
+          fCtx.strokeStyle = '#fef08a'; fCtx.lineWidth = 3; fCtx.stroke();
+          fCtx.fillStyle = '#fff'; fCtx.textAlign='center'; fCtx.textBaseline='middle'; fCtx.fillText(cs.stamp, p.x, p.y+2);
+        } else {
+          fCtx.font = '52px sans-serif'; fCtx.textAlign='center'; fCtx.textBaseline='middle'; fCtx.fillText(cs.stamp, p.x, p.y);
+        }
+        fCtx.restore();
+        YasCore.audio.sparkle(); YasCore.haptic(16);
+        return;
+      }
+      fCan.setPointerCapture(e.pointerId);
+      cDraw = true; cLast = p; drawFreeSeg(p, p);
+    });
+    fCan.addEventListener('pointermove', e => {
+      if (!cDraw) return; e.preventDefault(); const p = getFreePt(e); drawFreeSeg(cLast, p); cLast = p;
+    });
+    fCan.addEventListener('pointerup', () => cDraw = false);
+    fCan.addEventListener('pointercancel', () => cDraw = false);
+
+    function drawFreeSeg(a, b) {
+      fCtx.save(); fCtx.lineCap='round'; fCtx.lineJoin='round';
+      if (cs.tool==='eraser') {
+        fCtx.globalCompositeOperation='destination-out'; fCtx.lineWidth=30;
+        fCtx.beginPath(); fCtx.moveTo(a.x,a.y); fCtx.lineTo(b.x,b.y); fCtx.stroke();
+      } else if (cs.tool==='rainbow') {
+        cs.hue = (cs.hue + 8) % 360;
+        fCtx.strokeStyle=`hsl(${cs.hue},95%,56%)`; fCtx.lineWidth=16;
+        fCtx.beginPath(); fCtx.moveTo(a.x,a.y); fCtx.lineTo(b.x,b.y); fCtx.stroke();
+      } else {
+        fCtx.strokeStyle = cs.color; fCtx.lineWidth = cs.tool==='glitter'?11:16;
+        if (cs.tool==='glitter') { fCtx.shadowColor='#fff'; fCtx.shadowBlur=12; }
+        fCtx.beginPath(); fCtx.moveTo(a.x,a.y); fCtx.lineTo(b.x,b.y); fCtx.stroke();
+        if (cs.tool==='glitter') {
+          for (let i=0;i<3;i++) {
+            fCtx.fillStyle = i===0?'#fff':'#fef08a';
+            fCtx.beginPath(); fCtx.arc(b.x+(Math.random()-.5)*30, b.y+(Math.random()-.5)*30, 2+Math.random()*4, 0, Math.PI*2); fCtx.fill();
+          }
+        }
+      }
+      fCtx.restore();
+    }
+
+    function undoColor() {
+      YasCore.audio.pop();
+      if (cs.cHist.length) fCtx.putImageData(cs.cHist.pop(), 0, 0);
+      else if (cs.svgHist.length) { const x = cs.svgHist.pop(); x.el.setAttribute('fill', x.prev); }
+    }
+    function resetColoring() { loadScene(); YasCore.audio.pop(); }
+    function rewardArt() {
+      YasCore.addReward(6, 2, '🎨 آفرین نقاش هنرمند! +۶ ستاره و +۲ غنچه یاس');
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 60, ['🎨','⭐','🌸']);
+    }
+    function saveArtPng() {
+      const svgStr = new XMLSerializer().serializeToString(cSvg);
+      const url = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}));
+      const img = new Image();
+      img.onload = () => {
+        const out = document.createElement('canvas'); out.width=940; out.height=760;
+        const x = out.getContext('2d');
+        x.fillStyle='#fdf4ff'; x.fillRect(0,0,940,760);
+        x.fillStyle='#6d28d9'; x.font='bold 28px Tahoma,sans-serif'; x.textAlign='center';
+        x.fillText('🎨 نقاشی جادویی من • شهر بازی یاس و رنگ 🌸', 470, 48);
+        x.drawImage(img, 20, 68, 900, 675);
+        x.drawImage(fCan, 20, 68, 900, 675);
+        URL.revokeObjectURL(url);
+        YasCore.saveImage(out.toDataURL('image/png'), 'naghashi-yas.png');
+      };
+      img.src = url;
+    }
+
+    // ==================== YAS DOLL STUDIO ====================
+    const HEADS = [
+      { id:'braids', l:'🎀 موی بافته‌ی خرگوشی' },
+      { id:'scPink', l:'🧕 روسری صورتی', c:'#f472b6' },
+      { id:'scMint', l:'🧕 روسری سبز پسته‌ای', c:'#86efac' },
+      { id:'scSky', l:'🧕 روسری فیروزه‌ای', c:'#38bdf8' },
+      { id:'scGold', l:'🧕 روسری گلبهی', c:'#fb923c' },
+      { id:'chWhite', l:'✨ چادر جشن تکلیف سفید', c:'#ffffff', border:'#f9a8d4' },
+      { id:'chPink', l:'🌸 چادر جشن تکلیف صورتی', c:'#fce7f3', border:'#ec4899' }
+    ];
+    const OUTFITS = [
+      { id:'pistachio', l:'💚 شومیز پسته‌ای و شلوار یشمی', top:'#a7f3d0', bot:'#065f46' },
+      { id:'princess', l:'💖 پیراهن پرنسسی صورتی', top:'#ff6db8', bot:'#ec4899' },
+      { id:'lavender', l:'💜 پیراهن یاسی ستاره‌ای', top:'#c4b5fd', bot:'#7c3aed' },
+      { id:'sky', l:'🩵 پیراهن آبی آسمانی', top:'#7dd3fc', bot:'#0284c7' },
+      { id:'sunny', l:'💛 پیراهن زرد آفتابی', top:'#fde047', bot:'#f59e0b' }
+    ];
+    const ACCS = [
+      { id:'crown', l:'👑 تاج گل و مروارید' },
+      { id:'pearl', l:'🤍 گردنبند مروارید' },
+      { id:'glasses', l:'👓 عینک بانمک' },
+      { id:'none', l:'ساده' }
+    ];
+    const PROPS = [
+      { id:'flower', l:'💐 دسته گل یاس' },
+      { id:'book', l:'📖 کتاب داستان' },
+      { id:'lantern', l:'🏮 فانوس نورانی' },
+      { id:'tasbih', l:'📿 تسبیح رنگی' }
+    ];
+    const BGS = [
+      { id:'garden', l:'🌸 باغ یاس', g1:'#bae6fd', g2:'#bbf7d0' },
+      { id:'mosque', l:'🕌 حیاط فیروزه‌ای', g1:'#e0f2fe', g2:'#fef3c7' },
+      { id:'stars', l:'🌙 شب پرستاره', g1:'#312e81', g2:'#7c3aed' },
+      { id:'pink', l:'🎀 اتاق صورتی', g1:'#fce7f3', g2:'#ede9fe' }
+    ];
+    const FACES = [
+      { id:'light', l:'😊 پوست روشن', fill:'#fde2cf' },
+      { id:'warm', l:'🥰 پوست گندمی', fill:'#f3c6a5' },
+      { id:'tan', l:'😄 پوست برنزه', fill:'#d89b72' }
+    ];
+
+    let ds = { head:'chWhite', outfit:'pistachio', acc:'crown', prop:'flower', bg:'garden', face:'light' };
+
+    function initDollUI() {
+      const mk = (id, arr, cur, fn) => {
+        const el = document.getElementById(id); el.innerHTML = '';
+        arr.forEach(x => {
+          const b = document.createElement('button');
+          b.className = 'chip' + (cur===x.id?' sel':''); b.textContent = x.l;
+          b.onclick = () => { fn(x.id); YasCore.audio.pop(); YasCore.haptic(14); initDollUI(); renderDoll(); };
+          el.appendChild(b);
+        });
+      };
+      mk('dHeadRow', HEADS, ds.head, v => ds.head = v);
+      mk('dOutfitRow', OUTFITS, ds.outfit, v => ds.outfit = v);
+      mk('dAccRow', ACCS, ds.acc, v => ds.acc = v);
+      mk('dPropRow', PROPS, ds.prop, v => ds.prop = v);
+      mk('dBgRow', BGS, ds.bg, v => ds.bg = v);
+      mk('dFaceRow', FACES, ds.face, v => ds.face = v);
+    }
+
+    function renderDoll() {
+      const bg = BGS.find(x=>x.id===ds.bg) || BGS[0];
+      const fc = FACES.find(x=>x.id===ds.face) || FACES[0];
+      const of = OUTFITS.find(x=>x.id===ds.outfit) || OUTFITS[0];
+      const hd = HEADS.find(x=>x.id===ds.head) || HEADS[0];
+      const isChador = hd.id.startsWith('ch');
+      const isScarf = hd.id.startsWith('sc');
+
+      let outfitSvg = '';
+      if (of.id === 'pistachio') {
+        // شومیز سبز پسته‌ای یقه ب‌ب با شلوار دمپاگشاد سبز یشمی
+        outfitSvg = `
+          <path d="M168,288 L152,415 L202,415 L210,330 L218,415 L268,415 L252,288 Z" fill="${of.bot}" stroke="#022c22" stroke-width="2.5"/>
+          <path d="M160,194 L260,194 L268,294 L152,294 Z" fill="${of.top}" stroke="#059669" stroke-width="2.5"/>
+          <path d="M182,194 Q196,216 210,198 Q224,216 238,194 Z" fill="#ffffff" stroke="#059669" stroke-width="2"/>
+          <path d="M160,196 L124,264 L144,274 L170,224 Z" fill="${of.top}" stroke="#059669" stroke-width="2.5"/>
+          <path d="M260,196 L296,264 L276,274 L250,224 Z" fill="${of.top}" stroke="#059669" stroke-width="2.5"/>`;
+      } else {
+        outfitSvg = `
+          <path d="M166,194 L254,194 L298,412 Q210,432 122,412 Z" fill="${of.bot}" stroke="#ffffff" stroke-width="3"/>
+          <path d="M166,194 L254,194 L262,272 L158,272 Z" fill="${of.top}"/>
+          <path d="M166,196 L126,264 L146,274 L174,226 Z" fill="${of.top}"/>
+          <path d="M254,196 L294,264 L274,274 L246,226 Z" fill="${of.top}"/>
+          <text x="210" y="346" text-anchor="middle" font-size="26">✨🌸✨</text>`;
+      }
+
+      let headSvg = '';
+      if (hd.id === 'braids') {
+        headSvg = `
+          <path d="M150,145 Q210,64 270,145 Q272,195 258,235 L242,230 L248,155 L172,155 L178,230 L162,235 Q148,195 150,145 Z" fill="#451a03"/>
+          <circle cx="156" cy="195" r="14" fill="#451a03"/><circle cx="154" cy="222" r="12" fill="#451a03"/>
+          <circle cx="264" cy="195" r="14" fill="#451a03"/><circle cx="266" cy="222" r="12" fill="#451a03"/>
+          <text x="155" y="168" font-size="18">🎀</text><text x="248" y="168" font-size="18">🎀</text>`;
+      } else if (isScarf) {
+        headSvg = `<path d="M148,152 Q152,72 210,72 Q268,72 272,152 Q278,225 248,252 Q210,268 172,252 Q142,225 148,152 Z" fill="${hd.c}" stroke="#fff" stroke-width="3"/>`;
+      } else if (isChador) {
+        headSvg = `<path d="M145,152 Q154,68 210,68 Q266,68 275,152 L322,424 Q210,442 98,424 Z" fill="${hd.c}" stroke="${hd.border}" stroke-width="3.5" opacity="0.94"/>
+                   <text x="155" y="320" font-size="18">🌸</text><text x="255" y="340" font-size="18">✨</text><text x="210" y="392" font-size="20" text-anchor="middle">🌸 ✨ 🌸</text>`;
+      }
+
+      const accSvg = ds.acc === 'crown' ? `<text x="210" y="88" text-anchor="middle" font-size="40">👑</text>` :
+                     ds.acc === 'pearl' ? `<path d="M180,204 Q210,226 240,204" fill="none" stroke="#fff" stroke-width="7" stroke-dasharray="1 10" stroke-linecap="round"/>` :
+                     ds.acc === 'glasses' ? `<circle cx="192" cy="144" r="13" fill="rgba(255,255,255,.35)" stroke="#ec4899" stroke-width="3"/><circle cx="228" cy="144" r="13" fill="rgba(255,255,255,.35)" stroke="#ec4899" stroke-width="3"/><line x1="205" y1="144" x2="215" y2="144" stroke="#ec4899" stroke-width="3"/>` : '';
+
+      const propEmoji = { flower:'💐', book:'📖', lantern:'🏮', tasbih:'📿' }[ds.prop] || '💐';
+
+      document.getElementById('dollSvg').innerHTML = `
+        <defs>
+          <linearGradient id="dBgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${bg.g1}"/><stop offset="100%" stop-color="${bg.g2}"/></linearGradient>
+        </defs>
+        <rect width="420" height="460" fill="url(#dBgG)"/>
+        <text x="58" y="68" font-size="28" opacity="0.75">${ds.bg==='stars'?'🌟':'☁️'}</text>
+        <text x="342" y="84" font-size="28" opacity="0.75">${ds.bg==='stars'?'🌙':'🦋'}</text>
+        <ellipse cx="210" cy="432" rx="95" ry="16" fill="rgba(0,0,0,0.12)"/>
+        <!-- کفش‌ها -->
+        <ellipse cx="182" cy="422" rx="22" ry="12" fill="#ec4899"/><ellipse cx="238" cy="422" rx="22" ry="12" fill="#ec4899"/>
+        <!-- دست‌ها -->
+        <circle cx="132" cy="272" r="13" fill="${fc.fill}"/><circle cx="288" cy="272" r="13" fill="${fc.fill}"/>
+        ${outfitSvg}
+        ${isChador ? '' : headSvg}
+        <!-- گردن و صورت -->
+        <rect x="198" y="176" width="24" height="24" rx="8" fill="${fc.fill}"/>
+        ${isChador ? headSvg : ''}
+        <circle cx="210" cy="144" r="46" fill="${fc.fill}" stroke="#d49e82" stroke-width="2.5"/>
+        <circle cx="192" cy="142" r="5" fill="#1e293b"/><circle cx="228" cy="142" r="5" fill="#1e293b"/>
+        <circle cx="190" cy="140" r="1.8" fill="#fff"/><circle cx="226" cy="140" r="1.8" fill="#fff"/>
+        <ellipse cx="180" cy="156" rx="8" ry="4.5" fill="#fda4af" opacity="0.65"/>
+        <ellipse cx="240" cy="156" rx="8" ry="4.5" fill="#fda4af" opacity="0.65"/>
+        <path d="M198,162 Q210,174 222,162" fill="none" stroke="#e11d48" stroke-width="3.2" stroke-linecap="round"/>
+        ${accSvg}
+        <text x="292" y="282" text-anchor="middle" font-size="40">${propEmoji}</text>
+      `;
+    }
+
+    function randomDoll() {
+      ds.head = HEADS[Math.floor(Math.random()*HEADS.length)].id;
+      ds.outfit = OUTFITS[Math.floor(Math.random()*OUTFITS.length)].id;
+      ds.acc = ACCS[Math.floor(Math.random()*ACCS.length)].id;
+      ds.prop = PROPS[Math.floor(Math.random()*PROPS.length)].id;
+      ds.bg = BGS[Math.floor(Math.random()*BGS.length)].id;
+      YasCore.audio.sparkle(); initDollUI(); renderDoll();
+    }
+    function praiseDoll() {
+      YasCore.addReward(5, 2, '🎀 چه عروسک خوش‌سلیقه‌ای! +۵ ستاره و +۲ غنچه یاس');
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 60, ['🎀','🌸','⭐']);
+    }
+    function saveDollPng() {
+      const svgStr = new XMLSerializer().serializeToString(document.getElementById('dollSvg'));
+      const url = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width=680; c.height=780;
+        const x = c.getContext('2d');
+        x.fillStyle='#fdf2f8'; x.fillRect(0,0,680,780);
+        x.fillStyle='#db2777'; x.font='bold 28px Tahoma,sans-serif'; x.textAlign='center';
+        x.fillText('🎀 عروسکِ یاس من • شهر بازی یاس و رنگ 🌸', 340, 48);
+        x.drawImage(img, 40, 66, 600, 680);
+        URL.revokeObjectURL(url);
+        YasCore.saveImage(c.toDataURL('image/png'), 'aroosak-yas.png');
+      };
+      img.src = url;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initColorUI(); loadScene();
+      initDollUI(); renderDoll();
+    });
+  </script>
+</body>
+</html>

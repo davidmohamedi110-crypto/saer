@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ShahrBaziYas" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/ic_launcher_background</item>
+        <item name="android:statusBarColor">#FFEC4899</item>
+        <item name="android:navigationBarColor">#FF8B5CF6</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+</resources>

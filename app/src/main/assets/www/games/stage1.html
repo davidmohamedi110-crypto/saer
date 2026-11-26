@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>مرحله ۱ • کارگاه قاب گوشی و ناخونی</title>
+  <link rel="stylesheet" href="../shared/yas-theme.css" />
+  <style>
+    .wrap { position:relative; z-index:2; max-width:1120px; margin:12px auto 28px; padding:0 12px; }
+    .tabs { display:flex; gap:6px; background:#fdf2f8; border:2px solid #fbcfe8; padding:4px; border-radius:18px; }
+    .tab-btn { border:none; background:transparent; color:#831843; font-family:inherit; font-weight:900; font-size:13px; padding:7px 13px; border-radius:14px; cursor:pointer; transition:all .2s; }
+    .tab-btn.active { background:linear-gradient(180deg,#ff6db8,#e11d74); color:#fff; box-shadow:0 4px 12px rgba(225,29,116,.32); }
+    .panel { display:none; }
+    .panel.active { display:block; animation:yasPopIn .25s ease; }
+    .grid { display:grid; grid-template-columns:1fr 1.12fr; gap:15px; align-items:start; }
+    @media (max-width:860px){ .grid { grid-template-columns:1fr; } }
+
+    .sec-title { font-weight:900; font-size:14px; color:#6b21a8; margin:0 0 8px; display:flex; align-items:center; justify-content:space-between; gap:6px; }
+    .ctrl-box { background:rgba(255,249,253,0.92); border:2px solid #fce7f3; border-radius:20px; padding:11px 12px; margin-bottom:10px; }
+    .swatch-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .dot { width:36px; height:36px; border-radius:50%; border:3px solid #fff; box-shadow:0 4px 9px rgba(0,0,0,.18); cursor:pointer; transition:transform .16s var(--spring); }
+    .dot.sel { transform:scale(1.16); outline:3px solid #ec4899; outline-offset:2px; }
+    .chips { display:flex; flex-wrap:wrap; gap:7px; }
+    .chip { border:2px solid #e9d5ff; background:#fff; color:#4c1d95; border-radius:13px; padding:6px 11px; font-family:inherit; font-weight:800; font-size:12.5px; cursor:pointer; transition:all .15s; }
+    .chip.sel { background:linear-gradient(180deg,#c084fc,#7c3aed); color:#fff; border-color:#6d28d9; box-shadow:0 3px 8px rgba(124,58,237,.28); }
+
+    /* Phone 2.5D Stage */
+    .phone-stage { display:flex; flex-direction:column; align-items:center; padding:14px 8px; border-radius:22px; background:radial-gradient(circle at 50% 35%, #ffffff 0%, #fce7f3 60%, #e0f2fe 100%); border:2.5px dashed #f9a8d4; }
+    .phone-wrap { position:relative; display:inline-block; }
+    .phone-shell {
+      position:relative; width:246px; height:456px; border-radius:44px;
+      border:8px solid #35274a;
+      box-shadow:0 22px 40px rgba(53,39,74,.28), inset 0 0 0 3px rgba(255,255,255,.4);
+      overflow:hidden; background:#22c55e; touch-action:none;
+    }
+    .phone-shell::after {
+      content:""; position:absolute; inset:0; pointer-events:none; z-index:4;
+      background:linear-gradient(125deg, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.02) 38%, transparent 60%, rgba(0,0,0,0.08) 100%);
+    }
+    #phoneBg, #phoneDraw { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    #phoneDraw { z-index:3; touch-action:none; }
+    .cam-island {
+      position:absolute; top:16px; left:16px; width:80px; height:106px; border-radius:24px;
+      background:rgba(255,255,255,.86); backdrop-filter:blur(6px);
+      border:3px solid rgba(53,39,74,.3); box-shadow:0 8px 16px rgba(0,0,0,.16);
+      z-index:5; pointer-events:none; display:grid; grid-template-columns:1fr 1fr; align-items:center; justify-items:center; padding:8px; gap:4px;
+    }
+    .cam-lens { width:25px; height:25px; border-radius:50%; background:radial-gradient(circle at 32% 32%, #93c5fd 0%, #1e293b 45%, #020617 100%); border:2.5px solid #e2e8f0; box-shadow:inset 0 0 5px #000; }
+    .cam-flash { width:15px; height:15px; border-radius:50%; background:radial-gradient(circle,#fef08a,#f59e0b); border:2px solid #fff; }
+
+    #stLayer { position:absolute; inset:0; z-index:6; pointer-events:none; }
+    .placed-st { position:absolute; transform:translate(-50%,-50%); cursor:grab; pointer-events:auto; touch-action:none; line-height:1; padding:2px 5px; border-radius:12px; filter:drop-shadow(0 4px 6px rgba(0,0,0,.22)); }
+    .placed-st.sel { outline:2.5px dashed #fff; box-shadow:0 0 0 4px rgba(236,72,153,.55); background:rgba(255,255,255,.18); }
+    .placed-st.badge { font-weight:900; color:#fff; background:linear-gradient(135deg,#ec4899,#8b5cf6); border:2px solid #fef08a; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+    .st-tools { display:none; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:10px; background:#fff; border:2px solid #f472b6; border-radius:15px; padding:6px 10px; }
+    .st-tools.show { display:flex; }
+    .st-btn { border:2px solid #fce7f3; background:#fff; border-radius:14px; padding:6px 10px; font-size:21px; cursor:pointer; }
+    .st-btn.pill { font-family:inherit; font-size:12.5px; font-weight:900; color:#7e22ce; background:linear-gradient(135deg,#fef3c7,#fce7f3); border-color:#fbbf24; }
+
+    /* Hand & Nails Stage */
+    .hand-stage { display:flex; flex-direction:column; align-items:center; padding:12px 8px; border-radius:22px; background:radial-gradient(circle at 50% 35%, #ffffff 0%, #eff6ff 65%, #fce7f3 100%); border:2.5px dashed #93c5fd; }
+    #handSvg { width:100%; max-width:340px; height:auto; filter:drop-shadow(0 14px 24px rgba(124,58,237,.16)); }
+    .nail-hit { cursor:pointer; transition:filter .15s; }
+    .nail-hit:hover { filter:brightness(1.08); }
+    .polish-rack { display:flex; flex-wrap:wrap; justify-content:center; gap:7px; margin-top:10px; padding:10px; background:rgba(255,255,255,.92); border-radius:18px; border:2px solid #fbcfe8; width:100%; }
+    .bottle { display:flex; flex-direction:column; align-items:center; border:none; background:transparent; cursor:pointer; padding:2px; transition:transform .16s var(--spring); }
+    .bottle.sel { transform:translateY(-7px) scale(1.12); }
+    .b-cap { width:11px; height:14px; background:linear-gradient(90deg,#1e293b,#475569); border-radius:4px 4px 0 0; }
+    .b-glass { width:25px; height:29px; border-radius:8px 8px 10px 10px; border:2.5px solid #fff; box-shadow:0 5px 10px rgba(0,0,0,.18); }
+    .bottle.sel .b-glass { outline:3px solid #ec4899; }
+
+    .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; justify-content:center; }
+    .score-box { display:none; margin-top:10px; padding:12px; border-radius:18px; background:linear-gradient(135deg,#fef3c7,#fce7f3); border:2.5px solid #f59e0b; text-align:center; }
+    .score-box.show { display:block; animation:yasPopIn .3s var(--spring); }
+  </style>
+</head>
+<body>
+  <header class="yas-header">
+    <div class="yas-header-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="jelly-btn jb-purple" style="padding:8px 12px;font-size:12.5px;" onclick="location.href='../index.html'">🏠 منو</button>
+        <div>
+          <div style="font-weight:900;font-size:15px;color:#6b21a8;">📱 قاب گوشی و ناخونی</div>
+          <div style="font-size:11px;font-weight:700;color:#ec4899;">مرحله ۱ • شهرِ بازی یاس و رنگ</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button id="tPhone" class="tab-btn active" onclick="switchTab('phone')">📱 قاب گوشی</button>
+        <button id="tNail" class="tab-btn" onclick="switchTab('nail')">💅 ناخونی و حنا</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="stat-chip stars" onclick="YasCore.openGarden()">⭐ <span data-stars>0</span></span>
+        <span class="stat-chip buds" onclick="YasCore.openGarden()">🌸 <span data-buds>0</span></span>
+        <button data-sound-btn class="soft-btn" style="padding:7px 10px;" onclick="YasCore.audio.toggle()">🔊</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- پنل قاب گوشی -->
+    <section id="pPhone" class="panel active">
+      <div class="grid">
+        <div class="glass-card">
+          <div class="sec-title">
+            <span>📱 قاب گوشیِ براقِ من</span>
+            <span id="modeHint" class="soft-btn" style="padding:3px 9px;font-size:11px;cursor:default;">حالت: جابه‌جایی استیکر</span>
+          </div>
+          <div class="phone-stage">
+            <div class="phone-wrap">
+              <div id="phoneShell" class="phone-shell">
+                <canvas id="phoneBg" width="492" height="912"></canvas>
+                <canvas id="phoneDraw" width="492" height="912"></canvas>
+                <div class="cam-island">
+                  <div class="cam-lens"></div><div class="cam-flash"></div>
+                  <div class="cam-lens"></div><div class="cam-lens"></div>
+                </div>
+                <div id="stLayer"></div>
+              </div>
+            </div>
+            <div id="stTools" class="st-tools">
+              <button class="soft-btn" onclick="resizeSt(6)">➕ بزرگ</button>
+              <button class="soft-btn" onclick="resizeSt(-6)">➖ کوچک</button>
+              <button class="soft-btn" onclick="rotateSt(18)">🔄 چرخش</button>
+              <button class="soft-btn" style="color:#be123c;" onclick="delSt()">🗑️ حذف</button>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="jelly-btn jb-gold" onclick="scorePhone()">✨ امتیاز و جایزه!</button>
+            <button class="jelly-btn jb-cyan" onclick="savePhoneImg()">📸 ذخیره در گالری</button>
+            <button class="soft-btn" onclick="resetPhone()">🔄 قاب جدید</button>
+          </div>
+          <div id="phoneScore" class="score-box">
+            <div id="pScoreBig" style="font-size:20px;font-weight:900;color:#b45309;"></div>
+            <div id="pScoreMsg" style="font-size:13px;font-weight:800;color:#831843;margin-top:3px;"></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="ctrl-box">
+            <div class="sec-title"><span>🎨 ۱. رنگ قاب گوشی (۸ رنگ اصلی + جادویی)</span></div>
+            <div id="pColors" class="swatch-row"></div>
+          </div>
+          <div class="ctrl-box">
+            <div class="sec-title"><span>✨ ۲. طرح و اکلیلِ سه‌بعدی</span></div>
+            <div id="pPatterns" class="chips"></div>
+          </div>
+          <div class="ctrl-box">
+            <div class="sec-title">
+              <span>🖌️ ۳. نقاشی آزاد روی قاب</span>
+              <div style="display:flex;gap:5px;">
+                <button class="soft-btn" style="padding:4px 8px;font-size:11px;" onclick="undoDraw()">↩️ برگشت</button>
+                <button class="soft-btn" style="padding:4px 8px;font-size:11px;" onclick="clearDraw()">🧹 پاک</button>
+              </div>
+            </div>
+            <div class="chips" style="margin-bottom:8px;">
+              <button id="tmMove" class="chip sel" onclick="setTool('move')">✋ استیکر</button>
+              <button id="tmBrush" class="chip" onclick="setTool('brush')">🖍️ قلم</button>
+              <button id="tmSpark" class="chip" onclick="setTool('sparkle')">✨ اکلیلی</button>
+              <button id="tmRain" class="chip" onclick="setTool('rainbow')">🌈 رنگین‌کمان</button>
+              <button id="tmErase" class="chip" onclick="setTool('eraser')">🧽 پاک‌کن</button>
+            </div>
+            <div id="bColors" class="swatch-row"></div>
+          </div>
+          <div class="ctrl-box" style="margin-bottom:0;">
+            <div class="sec-title"><span>⭐ ۴. استیکر ستاره، قلب و یاس</span></div>
+            <div id="stPal" class="chips"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- پنل ناخونی و حنا -->
+    <section id="pNail" class="panel">
+      <div class="grid">
+        <div class="glass-card">
+          <div class="sec-title">
+            <span>💅 غرفه ناخونی و حنای رنگین‌کمان</span>
+            <span class="soft-btn" style="padding:3px 9px;font-size:11px;cursor:default;">روی هر ناخن بزن!</span>
+          </div>
+          <div class="hand-stage">
+            <svg id="handSvg" viewBox="0 0 360 400" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="skinLight" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffeadb"/><stop offset="100%" stop-color="#f5c9ac"/></linearGradient>
+                <linearGradient id="skinWarm" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f8d2b4"/><stop offset="100%" stop-color="#dfa57f"/></linearGradient>
+                <linearGradient id="skinTan" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#dfa780"/><stop offset="100%" stop-color="#bd7d53"/></linearGradient>
+                <linearGradient id="rainbowNail" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ff4fa3"/><stop offset="33%" stop-color="#facc15"/>
+                  <stop offset="66%" stop-color="#34d399"/><stop offset="100%" stop-color="#38bdf8"/>
+                </linearGradient>
+                <linearGradient id="pearlG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#cbd5e1"/></linearGradient>
+                <filter id="hShad" x="-10%" y="-10%" width="120%" height="120%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#7c3aed" flood-opacity="0.18"/>
+                </filter>
+              </defs>
+              <g filter="url(#hShad)">
+                <path id="skinPath"
+                  d="M 118 395 L 118 308 C 94 296, 65 268, 45 236 C 30 212, 42 184, 66 190 C 80 194, 94 214, 108 232 L 104 128 C 103 95, 145 92, 147 125 L 152 204 L 158 92 C 160 58, 204 58, 204 92 L 206 202 L 216 106 C 219 74, 260 77, 258 110 L 252 214 L 268 148 C 276 118, 314 128, 307 158 L 284 268 C 278 304, 256 322, 242 332 L 242 395 Z"
+                  fill="url(#skinLight)" stroke="#c98e6e" stroke-width="3.2" stroke-linejoin="round"/>
+              </g>
+              <g id="hennaG" opacity="0.9"></g>
+              <g id="ringG"></g>
+              <g id="braceG"></g>
+              <!-- ۵ ناخن براق لمسی -->
+              <g class="nail-hit" onclick="paintNail(0)">
+                <ellipse id="nf0" cx="56" cy="206" rx="14" ry="18" transform="rotate(-32 56 206)" fill="#fff5f8" stroke="#c98e6e" stroke-width="2.4"/>
+                <ellipse cx="51" cy="199" rx="4" ry="8" transform="rotate(-32 51 199)" fill="rgba(255,255,255,0.65)" pointer-events="none"/>
+                <text id="na0" x="56" y="212" text-anchor="middle" font-size="14" pointer-events="none"></text>
+              </g>
+              <g class="nail-hit" onclick="paintNail(1)">
+                <rect id="nf1" x="111" y="102" width="29" height="36" rx="14" fill="#fff5f8" stroke="#c98e6e" stroke-width="2.4"/>
+                <rect x="117" y="108" width="6" height="18" rx="3" fill="rgba(255,255,255,0.65)" pointer-events="none"/>
+                <text id="na1" x="125.5" y="126" text-anchor="middle" font-size="15" pointer-events="none"></text>
+              </g>
+              <g class="nail-hit" onclick="paintNail(2)">
+                <rect id="nf2" x="166" y="68" width="31" height="39" rx="15" fill="#fff5f8" stroke="#c98e6e" stroke-width="2.4"/>
+                <rect x="172" y="75" width="6" height="20" rx="3" fill="rgba(255,255,255,0.65)" pointer-events="none"/>
+                <text id="na2" x="181.5" y="94" text-anchor="middle" font-size="16" pointer-events="none"></text>
+              </g>
+              <g class="nail-hit" onclick="paintNail(3)">
+                <rect id="nf3" x="223" y="85" width="29" height="36" rx="14" fill="#fff5f8" stroke="#c98e6e" stroke-width="2.4"/>
+                <rect x="229" y="91" width="6" height="18" rx="3" fill="rgba(255,255,255,0.65)" pointer-events="none"/>
+                <text id="na3" x="237.5" y="109" text-anchor="middle" font-size="15" pointer-events="none"></text>
+              </g>
+              <g class="nail-hit" onclick="paintNail(4)">
+                <rect id="nf4" x="275" y="132" width="25" height="31" rx="12" transform="rotate(14 287 147)" fill="#fff5f8" stroke="#c98e6e" stroke-width="2.4"/>
+                <rect x="281" y="137" width="5" height="14" rx="2.5" transform="rotate(14 287 147)" fill="rgba(255,255,255,0.65)" pointer-events="none"/>
+                <text id="na4" x="287" y="153" text-anchor="middle" font-size="13" pointer-events="none"></text>
+              </g>
+            </svg>
+            <div id="polishRack" class="polish-rack"></div>
+          </div>
+          <div class="actions">
+            <button class="jelly-btn jb-pink" onclick="rainbowNails()">🌈 همه رنگین‌کمانی!</button>
+            <button class="jelly-btn jb-gold" onclick="scoreNail()">✨ امتیاز و جایزه!</button>
+            <button class="jelly-btn jb-cyan" onclick="saveHandImg()">📸 ذخیره در گالری</button>
+            <button class="soft-btn" onclick="resetNails()">🧹 پاک</button>
+          </div>
+          <div id="nailScore" class="score-box">
+            <div id="nScoreBig" style="font-size:20px;font-weight:900;color:#b45309;"></div>
+            <div id="nScoreMsg" style="font-size:13px;font-weight:800;color:#831843;margin-top:3px;"></div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="ctrl-box">
+            <div class="sec-title">
+              <span>⭐ ۱. ستاره و نگین روی ناخن</span>
+              <button class="soft-btn" style="padding:4px 8px;font-size:11px;" onclick="stickAllNails()">✨ بزن روی همه</button>
+            </div>
+            <div id="nStickers" class="chips"></div>
+          </div>
+          <div class="ctrl-box">
+            <div class="sec-title"><span>🌿 ۲. نقش حنای دخترانه</span></div>
+            <div id="nHenna" class="chips"></div>
+          </div>
+          <div class="ctrl-box">
+            <div class="sec-title"><span>📿 ۳. دستبند و انگشتر</span></div>
+            <div id="nBrace" class="chips" style="margin-bottom:8px;"></div>
+            <div id="nRing" class="chips"></div>
+          </div>
+          <div class="ctrl-box" style="margin-bottom:0;">
+            <div class="sec-title"><span>🌸 ۴. رنگ پوست و پیام یاس</span></div>
+            <div id="nSkin" class="swatch-row" style="margin-bottom:9px;"></div>
+            <div style="background:linear-gradient(135deg,#ecfdf5,#fdf2f8);border:1.5px solid #a7f3d0;border-radius:14px;padding:10px;font-size:12.5px;font-weight:800;color:#065f46;line-height:1.6;">
+              💐 آراستگی، پاکیزگی و شادابی در خانه از زیباترین رسم‌های دخترانِ دوستدارِ حضرت زهرا (س) است!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../shared/yas-core.js"></script>
+  <script>
+    function switchTab(t) {
+      YasCore.audio.pop(); YasCore.haptic(15);
+      document.getElementById('pPhone').classList.toggle('active', t === 'phone');
+      document.getElementById('pNail').classList.toggle('active', t === 'nail');
+      document.getElementById('tPhone').classList.toggle('active', t === 'phone');
+      document.getElementById('tNail').classList.toggle('active', t === 'nail');
+    }
+
+    // ---------------- PHONE CASE ----------------
+    const PCOLS = [
+      { id:'yellow', val:'#facc15' }, { id:'orange', val:'#fb923c' }, { id:'red', val:'#ef4444' },
+      { id:'pink', val:'#ff69b4' }, { id:'purple', val:'#a855f7' }, { id:'green', val:'#22c55e' },
+      { id:'blue', val:'#38bdf8' }, { id:'black', val:'#1e293b' },
+      { id:'rainbow', val:'rainbow' }, { id:'galaxy', val:'galaxy' }
+    ];
+    const PPATS = [
+      { id:'solid', l:'ساده براق' }, { id:'dots', l:'خال‌خالی ⚪' }, { id:'stripes', l:'راه‌راه 🎀' },
+      { id:'hearts', l:'قلبی 💖' }, { id:'stars', l:'ستاره‌ای ⭐' }, { id:'glitter', l:'اکلیل جادویی ✨' }
+    ];
+    const BCOLS = ['#ffffff','#ff2e88','#facc15','#38bdf8','#22c55e','#a855f7','#ef4444','#1e293b'];
+    const STICKS = [
+      {c:'⭐',t:'e'},{c:'💖',t:'e'},{c:'❤️',t:'e'},{c:'🌸',t:'e'},{c:'🦋',t:'e'},{c:'🌈',t:'e'},
+      {c:'👑',t:'e'},{c:'🌙',t:'e'},{c:'📿',t:'e'},{c:'🎀',t:'e'},{c:'🍓',t:'e'},{c:'✨',t:'e'},
+      {c:'یا زهرا 🌸',t:'b'},{c:'بسم‌الله ✨',t:'b'},{c:'ماشاءالله 💖',t:'b'}
+    ];
+
+    let ps = { col:'green', pat:'hearts', tool:'move', bcol:'#ff2e88', list:[], sel:null, hist:[], hue:0 };
+    const bgC = document.getElementById('phoneBg'), bgX = bgC.getContext('2d');
+    const drC = document.getElementById('phoneDraw'), drX = drC.getContext('2d');
+    const stL = document.getElementById('stLayer');
+
+    function initPhoneUI() {
+      const pc = document.getElementById('pColors'); pc.innerHTML = '';
+      PCOLS.forEach(c => {
+        const b = document.createElement('button');
+        b.className = 'dot' + (ps.col === c.id ? ' sel' : '');
+        b.style.background = c.val === 'rainbow' ? 'linear-gradient(135deg,#ff4fa3,#facc15,#22c55e,#38bdf8,#a855f7)' :
+                             c.val === 'galaxy' ? 'linear-gradient(135deg,#312e81,#7e22ce,#ec4899)' : c.val;
+        b.onclick = () => { ps.col = c.id; YasCore.audio.pop(); initPhoneUI(); drawPhoneBg(); };
+        pc.appendChild(b);
+      });
+
+      const pp = document.getElementById('pPatterns'); pp.innerHTML = '';
+      PPATS.forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (ps.pat === p.id ? ' sel' : '');
+        b.textContent = p.l;
+        b.onclick = () => { ps.pat = p.id; YasCore.audio.pop(); initPhoneUI(); drawPhoneBg(); };
+        pp.appendChild(b);
+      });
+
+      const bc = document.getElementById('bColors'); bc.innerHTML = '';
+      BCOLS.forEach(col => {
+        const b = document.createElement('button');
+        b.className = 'dot' + (ps.bcol === col ? ' sel' : '');
+        b.style.width = '28px'; b.style.height = '28px'; b.style.background = col;
+        b.onclick = () => { ps.bcol = col; if (ps.tool === 'move' || ps.tool === 'eraser') setTool('brush'); YasCore.audio.pop(); initPhoneUI(); };
+        bc.appendChild(b);
+      });
+
+      const sp = document.getElementById('stPal');
+      if (!sp.children.length) {
+        STICKS.forEach(it => {
+          const b = document.createElement('button');
+          b.className = 'st-btn' + (it.t === 'b' ? ' pill' : '');
+          b.textContent = it.c;
+          b.onclick = () => addSticker(it);
+          sp.appendChild(b);
+        });
+      }
+    }
+
+    function drawPhoneBg() {
+      const w = bgC.width, h = bgC.height, c = bgX;
+      c.clearRect(0, 0, w, h);
+      const co = PCOLS.find(x => x.id === ps.col) || PCOLS[5];
+      if (co.val === 'rainbow') {
+        const g = c.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0,'#ff6db8'); g.addColorStop(.25,'#fde047'); g.addColorStop(.5,'#4ade80'); g.addColorStop(.75,'#38bdf8'); g.addColorStop(1,'#c084fc');
+        c.fillStyle = g;
+      } else if (co.val === 'galaxy') {
+        const g = c.createLinearGradient(0, 0, w, h);
+        g.addColorStop(0,'#1e1b4b'); g.addColorStop(.5,'#6b21a8'); g.addColorStop(1,'#db2777');
+        c.fillStyle = g;
+      } else c.fillStyle = co.val;
+      c.fillRect(0, 0, w, h);
+
+      c.save();
+      if (ps.pat === 'dots') {
+        c.fillStyle = 'rgba(255,255,255,0.34)';
+        for (let y=30; y<h; y+=64) for (let x=28; x<w; x+=64) { c.beginPath(); c.arc(x+((y/64)%2)*28, y, 13, 0, Math.PI*2); c.fill(); }
+      } else if (ps.pat === 'stripes') {
+        c.strokeStyle = 'rgba(255,255,255,0.26)'; c.lineWidth = 24;
+        for (let i=-h; i<w+h; i+=74) { c.beginPath(); c.moveTo(i,0); c.lineTo(i+h*0.6,h); c.stroke(); }
+      } else if (ps.pat === 'hearts' || ps.pat === 'stars') {
+        c.font = '34px sans-serif'; c.textAlign='center'; c.textBaseline='middle'; c.globalAlpha=0.45;
+        const s = ps.pat === 'hearts' ? '💖' : '⭐';
+        for (let y=60; y<h; y+=92) for (let x=50; x<w; x+=88) c.fillText(s, x+((y/92)%2)*35, y);
+      } else if (ps.pat === 'glitter') {
+        for (let i=0; i<180; i++) {
+          c.fillStyle = i%3===0?'rgba(255,255,255,.9)':i%3===1?'rgba(254,240,138,.85)':'rgba(244,114,182,.8)';
+          c.beginPath(); c.arc(((i*73)%(w-20))+10, ((i*137)%(h-20))+10, 2+(i%5), 0, Math.PI*2); c.fill();
+        }
+      }
+      c.restore();
+    }
+
+    function setTool(t) {
+      ps.tool = t;
+      const m = { move:'tmMove', brush:'tmBrush', sparkle:'tmSpark', rainbow:'tmRain', eraser:'tmErase' };
+      Object.values(m).forEach(id => document.getElementById(id).classList.remove('sel'));
+      document.getElementById(m[t]).classList.add('sel');
+      const h = { move:'جابه‌جایی استیکر', brush:'قلم رنگی', sparkle:'قلم اکلیلی ✨', rainbow:'قلم رنگین‌کمان 🌈', eraser:'پاک‌کن' };
+      document.getElementById('modeHint').textContent = 'حالت: ' + h[t];
+      drC.style.pointerEvents = t === 'move' ? 'none' : 'auto';
+      if (t !== 'move') selectSt(null);
+    }
+
+    let drawing = false, lastPt = null;
+    function ptFromE(e) {
+      const r = drC.getBoundingClientRect();
+      return { x:(e.clientX-r.left)*(drC.width/r.width), y:(e.clientY-r.top)*(drC.height/r.height) };
+    }
+    function pushHist() {
+      if (ps.hist.length > 16) ps.hist.shift();
+      ps.hist.push(drX.getImageData(0,0,drC.width,drC.height));
+    }
+    drC.addEventListener('pointerdown', e => {
+      if (ps.tool === 'move') return;
+      e.preventDefault(); drC.setPointerCapture(e.pointerId); pushHist(); drawing = true; lastPt = ptFromE(e); strokeSeg(lastPt, lastPt);
+    });
+    drC.addEventListener('pointermove', e => {
+      if (!drawing) return; e.preventDefault(); const p = ptFromE(e); strokeSeg(lastPt, p); lastPt = p;
+    });
+    drC.addEventListener('pointerup', () => drawing = false);
+    drC.addEventListener('pointercancel', () => drawing = false);
+
+    function strokeSeg(a, b) {
+      drX.save(); drX.lineCap = 'round'; drX.lineJoin = 'round';
+      if (ps.tool === 'eraser') {
+        drX.globalCompositeOperation = 'destination-out'; drX.lineWidth = 28;
+        drX.beginPath(); drX.moveTo(a.x,a.y); drX.lineTo(b.x,b.y); drX.stroke();
+      } else if (ps.tool === 'rainbow') {
+        ps.hue = (ps.hue + 9) % 360;
+        drX.strokeStyle = `hsl(${ps.hue},95%,58%)`; drX.lineWidth = 15;
+        drX.beginPath(); drX.moveTo(a.x,a.y); drX.lineTo(b.x,b.y); drX.stroke();
+      } else {
+        drX.strokeStyle = ps.bcol; drX.lineWidth = ps.tool === 'sparkle' ? 10 : 14;
+        if (ps.tool === 'sparkle') { drX.shadowColor = '#fff'; drX.shadowBlur = 10; }
+        drX.beginPath(); drX.moveTo(a.x,a.y); drX.lineTo(b.x,b.y); drX.stroke();
+        if (ps.tool === 'sparkle') {
+          for (let i=0;i<3;i++) {
+            drX.fillStyle = i===0?'#fff':'#fef08a';
+            drX.beginPath(); drX.arc(b.x+(Math.random()-.5)*28, b.y+(Math.random()-.5)*28, 2+Math.random()*4, 0, Math.PI*2); drX.fill();
+          }
+        }
+      }
+      drX.restore();
+    }
+    function undoDraw() { if (!ps.hist.length) return; YasCore.audio.pop(); drX.putImageData(ps.hist.pop(), 0, 0); }
+    function clearDraw() { pushHist(); drX.clearRect(0,0,drC.width,drC.height); YasCore.audio.pop(); }
+
+    function addSticker(it) {
+      setTool('move'); YasCore.audio.sparkle(); YasCore.haptic(18);
+      const s = { id:'s'+Date.now()+Math.random(), c:it.c, t:it.t, x:34+Math.random()*36, y:36+Math.random()*40, sz:it.t==='b'?14:36, rot:0 };
+      ps.list.push(s); renderSt(); selectSt(s.id);
+    }
+    function renderSt() {
+      stL.innerHTML = '';
+      ps.list.forEach(s => {
+        const el = document.createElement('div');
+        el.className = 'placed-st' + (s.t==='b'?' badge':'') + (ps.sel===s.id?' sel':'');
+        el.textContent = s.c; el.style.left = s.x+'%'; el.style.top = s.y+'%'; el.style.fontSize = s.sz+'px';
+        el.style.transform = `translate(-50%,-50%) rotate(${s.rot}deg)`;
+        el.addEventListener('pointerdown', e => {
+          if (ps.tool !== 'move') return;
+          e.stopPropagation(); selectSt(s.id); el.setPointerCapture(e.pointerId);
+          const sr = document.getElementById('phoneShell').getBoundingClientRect();
+          const mv = ev => {
+            s.x = Math.max(8, Math.min(92, ((ev.clientX-sr.left)/sr.width)*100));
+            s.y = Math.max(8, Math.min(94, ((ev.clientY-sr.top)/sr.height)*100));
+            el.style.left = s.x+'%'; el.style.top = s.y+'%';
+          };
+          const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); };
+          el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+        });
+        stL.appendChild(el);
+      });
+    }
+    function selectSt(id) { ps.sel = id; document.getElementById('stTools').classList.toggle('show', !!id); renderSt(); }
+    function resizeSt(d) { const s = ps.list.find(x=>x.id===ps.sel); if(!s)return; s.sz=Math.max(12,Math.min(72,s.sz+d)); YasCore.audio.pop(); renderSt(); }
+    function rotateSt(d) { const s = ps.list.find(x=>x.id===ps.sel); if(!s)return; s.rot=(s.rot+d)%360; YasCore.audio.pop(); renderSt(); }
+    function delSt() { ps.list = ps.list.filter(x=>x.id!==ps.sel); selectSt(null); YasCore.audio.pop(); }
+
+    function scorePhone() {
+      const sc = Math.min(100, 84 + (ps.pat!=='solid'?4:0) + Math.min(9, ps.list.length*3) + (ps.hist.length?3:0));
+      document.getElementById('pScoreBig').textContent = `🏆 امتیاز: ${sc} از ۱۰۰ ⭐`;
+      document.getElementById('pScoreMsg').textContent = 'بارک‌الله هنرمند خوش‌سلیقه! (+۵ ستاره و +۲ غنچه یاس)';
+      document.getElementById('phoneScore').classList.add('show');
+      YasCore.addReward(5, 2, '🌟 آفرین! ۵ ستاره و ۲ غنچه یاس گرفتی!');
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 55, ['⭐','🌸','💖']);
+    }
+    function resetPhone() {
+      ps.list=[]; ps.sel=null; ps.hist=[]; drX.clearRect(0,0,drC.width,drC.height);
+      document.getElementById('phoneScore').classList.remove('show');
+      document.getElementById('stTools').classList.remove('show');
+      renderSt(); drawPhoneBg(); YasCore.audio.pop();
+    }
+    function savePhoneImg() {
+      const out = document.createElement('canvas'); out.width=620; out.height=1040;
+      const c = out.getContext('2d');
+      const g = c.createLinearGradient(0,0,620,1040); g.addColorStop(0,'#fff0fa'); g.addColorStop(1,'#e0f2fe');
+      c.fillStyle=g; c.fillRect(0,0,620,1040);
+      c.fillStyle='#7e22ce'; c.font='bold 28px Tahoma,sans-serif'; c.textAlign='center';
+      c.fillText('🌸 قاب گوشی من • شهر بازی یاس و رنگ 🌸', 310, 54);
+      const px=64, py=84, pw=492, ph=912, r=76;
+      c.save(); YasCore.drawRoundRect(c,px,py,pw,ph,r); c.clip();
+      c.drawImage(bgC,px,py,pw,ph); c.drawImage(drC,px,py,pw,ph);
+      c.fillStyle='rgba(255,255,255,.9)'; YasCore.drawRoundRect(c,px+32,py+32,160,212,44); c.fill();
+      [[px+76,py+84],[px+76,py+186],[px+148,py+186]].forEach(([x,y])=>{ c.fillStyle='#0f172a'; c.beginPath(); c.arc(x,y,24,0,Math.PI*2); c.fill(); c.strokeStyle='#cbd5e1'; c.lineWidth=5; c.stroke(); });
+      c.fillStyle='#facc15'; c.beginPath(); c.arc(px+148,py+84,14,0,Math.PI*2); c.fill();
+      ps.list.forEach(s=>{
+        c.save(); c.translate(px+(s.x/100)*pw, py+(s.y/100)*ph); c.rotate(s.rot*Math.PI/180);
+        if (s.t==='b') {
+          c.font=`bold ${s.sz*2}px Tahoma,sans-serif`; const tw=c.measureText(s.c).width+42, th=s.sz*2+22;
+          c.fillStyle='#ec4899'; YasCore.drawRoundRect(c,-tw/2,-th/2,tw,th,th/2); c.fill();
+          c.strokeStyle='#fef08a'; c.lineWidth=4; c.stroke();
+          c.fillStyle='#fff'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(s.c,0,2);
+        } else { c.font=`${s.sz*2}px sans-serif`; c.textAlign='center'; c.textBaseline='middle'; c.fillText(s.c,0,0); }
+        c.restore();
+      });
+      c.restore();
+      c.strokeStyle='#35274a'; c.lineWidth=14; YasCore.drawRoundRect(c,px,py,pw,ph,r); c.stroke();
+      YasCore.saveImage(out.toDataURL('image/png'), 'ghab-gooshi-yas.png');
+    }
+
+    // ---------------- NAIL & HENNA ----------------
+    const POLISH = [
+      {id:'r',v:'#ef4444'},{id:'p',v:'#ff4fa3'},{id:'y',v:'#facc15'},{id:'o',v:'#fb923c'},
+      {id:'g',v:'#22c55e'},{id:'c',v:'#06b6d4'},{id:'b',v:'#3b82f6'},{id:'u',v:'#a855f7'},
+      {id:'k',v:'#1e293b'},{id:'rb',v:'url(#rainbowNail)',css:'linear-gradient(135deg,#ff4fa3,#facc15,#34d399,#38bdf8)'}
+    ];
+    const NST = [{id:'',l:'ساده'},{id:'⭐',l:'⭐ ستاره'},{id:'💖',l:'💖 قلب'},{id:'💎',l:'💎 نگین'},{id:'🌼',l:'🌼 یاس'},{id:'✨',l:'✨ اکلیل'}];
+    const HEN = [{id:'none',l:'بدون حنا'},{id:'yas',l:'🌸 گل یاس'},{id:'moon',l:'🌙 ماه و ستاره'},{id:'heart',l:'💖 قلب اسلیمی'},{id:'bf',l:'🦋 پروانه'}];
+    const BRC = [{id:'none',l:'بدون دستبند'},{id:'pearl',l:'🤍 مروارید'},{id:'turq',l:'🩵 فیروزه'},{id:'gold',l:'💛 طلایی'}];
+    const RNG = [{id:'none',l:'بدون انگشتر'},{id:'star',l:'💍 ستاره'},{id:'heart',l:'💗 قلب'}];
+    const SKN = [{id:'skinLight',c:'#fde2cf'},{id:'skinWarm',c:'#f3c6a5'},{id:'skinTan',c:'#d89b72'}];
+    let ns = { pol:POLISH[1], st:'⭐', nails:[0,1,2,3,4].map(()=>({f:'#fff5f8',s:''})), hen:'yas', br:'pearl', rg:'star', sk:'skinLight' };
+
+    function initNailUI() {
+      const rk = document.getElementById('polishRack'); rk.innerHTML = '';
+      POLISH.forEach(p => {
+        const b = document.createElement('button');
+        b.className = 'bottle' + (ns.pol.id===p.id?' sel':'');
+        b.innerHTML = `<span class="b-cap"></span><span class="b-glass" style="background:${p.css||p.v}"></span>`;
+        b.onclick = () => { ns.pol = p; YasCore.audio.pop(); initNailUI(); };
+        rk.appendChild(b);
+      });
+      const fillChips = (id, arr, cur, fn) => {
+        const el = document.getElementById(id); el.innerHTML = '';
+        arr.forEach(x => {
+          const b = document.createElement('button');
+          b.className = 'chip' + (cur===x.id?' sel':''); b.textContent = x.l;
+          b.onclick = () => { fn(x.id); YasCore.audio.pop(); initNailUI(); renderHandAcc(); };
+          el.appendChild(b);
+        });
+      };
+      fillChips('nStickers', NST, ns.st, v => ns.st = v);
+      fillChips('nHenna', HEN, ns.hen, v => ns.hen = v);
+      fillChips('nBrace', BRC, ns.br, v => ns.br = v);
+      fillChips('nRing', RNG, ns.rg, v => ns.rg = v);
+
+      const sk = document.getElementById('nSkin'); sk.innerHTML = '';
+      SKN.forEach(s => {
+        const b = document.createElement('button');
+        b.className = 'dot' + (ns.sk===s.id?' sel':''); b.style.background = s.c;
+        b.onclick = () => { ns.sk = s.id; document.getElementById('skinPath').setAttribute('fill', `url(#${s.id})`); YasCore.audio.pop(); initNailUI(); };
+        sk.appendChild(b);
+      });
+    }
+
+    function paintNail(i) {
+      ns.nails[i].f = ns.pol.v; ns.nails[i].s = ns.st;
+      renderNails(); YasCore.audio.note(520 + i*85, 0.14, 'triangle', 0.15); YasCore.haptic(18);
+      const r = document.getElementById('nf'+i).getBoundingClientRect();
+      YasCore.burst(r.left+r.width/2, r.top+r.height/2, 12, ['✨','⭐']);
+    }
+    function renderNails() {
+      ns.nails.forEach((n,i) => { document.getElementById('nf'+i).setAttribute('fill', n.f); document.getElementById('na'+i).textContent = n.s; });
+    }
+    function rainbowNails() {
+      const cols = ['#ef4444','#ff4fa3','#facc15','#22c55e','#38bdf8'];
+      ns.nails.forEach((n,i) => { n.f = cols[i]; n.s = ns.st || '⭐'; });
+      renderNails(); YasCore.audio.sparkle(); YasCore.burst(window.innerWidth/2, window.innerHeight/2.6, 36, ['🌈','⭐']);
+    }
+    function stickAllNails() { ns.nails.forEach(n => n.s = ns.st); renderNails(); YasCore.audio.sparkle(); }
+    function resetNails() { ns.nails.forEach(n => { n.f='#fff5f8'; n.s=''; }); document.getElementById('nailScore').classList.remove('show'); renderNails(); YasCore.audio.pop(); }
+
+    function renderHandAcc() {
+      const h = document.getElementById('hennaG');
+      if (ns.hen==='none') h.innerHTML='';
+      else if (ns.hen==='yas') h.innerHTML=`<g transform="translate(185,265)" fill="none" stroke="#9a3412" stroke-width="2.5"><circle r="10" fill="#c2410c" opacity=".35"/><ellipse cy="-19" rx="7" ry="12"/><ellipse cy="19" rx="7" ry="12"/><ellipse cx="-19" rx="12" ry="7"/><ellipse cx="19" rx="12" ry="7"/><ellipse cx="-14" cy="-14" rx="7" ry="11" transform="rotate(-45 -14 -14)"/><ellipse cx="14" cy="-14" rx="7" ry="11" transform="rotate(45 14 -14)"/><ellipse cx="-14" cy="14" rx="7" ry="11" transform="rotate(45 -14 14)"/><ellipse cx="14" cy="14" rx="7" ry="11" transform="rotate(-45 14 14)"/></g>`;
+      else if (ns.hen==='moon') h.innerHTML=`<g transform="translate(185,265)" fill="none" stroke="#9a3412" stroke-width="2.6"><path d="M8 -22 A22 22 0 1 0 8 22 A16 16 0 1 1 8 -22 Z" fill="#b45309" opacity=".45"/><text x="16" y="4" font-size="18" fill="#9a3412">✦</text></g>`;
+      else if (ns.hen==='heart') h.innerHTML=`<g transform="translate(185,268)" fill="none" stroke="#9a3412" stroke-width="2.6"><path d="M0 22 C-32 0,-28 -24,0 -10 C28 -24,32 0,0 22 Z" fill="#c2410c" opacity=".3"/></g>`;
+      else h.innerHTML=`<g transform="translate(185,266)" fill="none" stroke="#9a3412" stroke-width="2.4"><ellipse cx="-16" cy="-8" rx="14" ry="11" fill="#c2410c" opacity=".25"/><ellipse cx="16" cy="-8" rx="14" ry="11" fill="#c2410c" opacity=".25"/><ellipse cx="-12" cy="11" rx="10" ry="9" fill="#c2410c" opacity=".2"/><ellipse cx="12" cy="11" rx="10" ry="9" fill="#c2410c" opacity=".2"/><line y1="-16" y2="18" stroke-width="3.5"/></g>`;
+
+      const b = document.getElementById('braceG');
+      if (ns.br==='none') b.innerHTML='';
+      else {
+        let html='';
+        for (let i=0;i<9;i++) {
+          const x=122+i*14.5, y=348+Math.sin((i/8)*Math.PI)*7;
+          const fill = ns.br==='pearl'?'url(#pearlG)':ns.br==='turq'?'#22d3ee':'#fbbf24';
+          const str = ns.br==='pearl'?'#cbd5e1':ns.br==='turq'?'#0284c7':'#b45309';
+          html += `<circle cx="${x}" cy="${y}" r="7.5" fill="${fill}" stroke="${str}" stroke-width="1.6"/>`;
+        }
+        if (ns.br==='gold') html += `<text x="180" y="376" text-anchor="middle" font-size="18">⭐</text>`;
+        b.innerHTML = html;
+      }
+      const r = document.getElementById('ringG');
+      r.innerHTML = ns.rg==='none' ? '' : `<rect x="215" y="182" width="40" height="8" rx="4" fill="#fbbf24" stroke="#b45309" stroke-width="1.6"/><text x="235" y="191" text-anchor="middle" font-size="18">${ns.rg==='star'?'⭐':'💗'}</text>`;
+    }
+
+    function scoreNail() {
+      const cnt = ns.nails.filter(n=>n.f!=='#fff5f8').length;
+      const sc = Math.min(100, 76 + cnt*4 + (ns.hen!=='none'?4:0));
+      document.getElementById('nScoreBig').textContent = `💅 امتیاز: ${sc} از ۱۰۰ ⭐`;
+      document.getElementById('nScoreMsg').textContent = 'آفرین هنرمند! چه رنگ‌بندی و حنای زیبایی! (+۵ ستاره و +۲ غنچه یاس)';
+      document.getElementById('nailScore').classList.add('show');
+      YasCore.addReward(5, 2, '💅 آفرین! ۵ ستاره و ۲ غنچه یاس گرفتی!');
+      YasCore.audio.fanfare(); YasCore.burst(window.innerWidth/2, window.innerHeight/3, 55, ['💅','⭐','🌸']);
+    }
+
+    function saveHandImg() {
+      const svgStr = new XMLSerializer().serializeToString(document.getElementById('handSvg'));
+      const url = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'}));
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width=720; c.height=860;
+        const x = c.getContext('2d');
+        const g = x.createLinearGradient(0,0,720,860); g.addColorStop(0,'#fff0fa'); g.addColorStop(1,'#e0f2fe');
+        x.fillStyle=g; x.fillRect(0,0,720,860);
+        x.fillStyle='#7e22ce'; x.font='bold 28px Tahoma,sans-serif'; x.textAlign='center';
+        x.fillText('💅 ناخونی و حنای رنگین‌کمان • شهر بازی یاس 🌸', 360, 52);
+        x.drawImage(img, 40, 70, 640, 760);
+        URL.revokeObjectURL(url);
+        YasCore.saveImage(c.toDataURL('image/png'), 'nakhoni-yas.png');
+      };
+      img.src = url;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initPhoneUI(); drawPhoneBg(); setTool('move');
+      initNailUI(); renderNails(); renderHandAcc();
+    });
+  </script>
+</body>
+</html>
